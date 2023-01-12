@@ -4,6 +4,10 @@ Access [kroki](https://kroki.io/) from python.
 
 To install:	```pip install kroki```
 
+Read the overview below, or
+view/download/play [this demo notebook](https://github.com/thorwhalen/kroki/blob/main/misc/kroki%20demo.ipynb) 
+to see how to use this package.
+
 The `kroki` python package is a convenience package for you to be able to generate diagrams, 
 through [kroki](https://kroki.io/), getting your images as bytes or as ipython objects via python 
 functions or doing some "cell magic" in your jupyter notebooks.
@@ -16,7 +20,6 @@ Don't miss the nice [cheatsheet](https://kroki.io/assets/kroki_cheatsheet_202105
 # Overview
 
 You can get the bytes of an image of a diagram like so:
-
 
 ```python
 from kroki import diagram_image_bytes
@@ -49,18 +52,13 @@ diagram_image('digraph D {Alice -> Bob, Charles -> Darwin}', diagram_type='graph
 <img width="240" alt="image" src="https://user-images.githubusercontent.com/1906276/212101184-376b2565-c241-4bcb-81f9-50c1eb538675.png">
 
 
-
-
 ```python
 png_bytes = diagram_image_bytes('Bob->Alice : Hello!', output_format='png')
 png_bytes[:7]
 ```
 
 
-
-
     b'\x89PNG\r\n\x1a'
-
 
 
 And then, there's magic, which will allow you to write your diagram source directly in a notebook's cell.
@@ -116,11 +114,7 @@ output_formats['plantuml']
 ```
 
 
-
-
     ['png', 'svg', 'jpeg', 'base64']
-
-
 
 
 ```python
