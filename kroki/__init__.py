@@ -11,8 +11,8 @@ from IPython.display import Image, SVG, display
 
 from i2 import validate_literal, wrap, Pipe
 
-_ascii_decode = partial(bytes.decode, encoding='ascii')
-_utf8_decode = partial(bytes.decode, encoding='utf-8')
+_ascii_decode = partial(bytes.decode, encoding="ascii")
+_utf8_decode = partial(bytes.decode, encoding="utf-8")
 _zlib_compress_level_9 = partial(zlib.compress, level=9)
 
 
@@ -26,11 +26,7 @@ def encode_src(diagram_source: str):
     'eNpzyk_StXPMyUxOVbBS8EjNyclXBAA7UAXs'
     """
     return _ascii_decode(
-        base64.urlsafe_b64encode(
-            _zlib_compress_level_9(
-                str.encode(diagram_source)
-            )
-        )
+        base64.urlsafe_b64encode(_zlib_compress_level_9(str.encode(diagram_source)))
     )
 
 
@@ -46,9 +42,7 @@ def decode_src(encoded_diagram_source: str):
 
     """
     return _utf8_decode(
-        zlib.decompress(
-            base64.urlsafe_b64decode(encoded_diagram_source)
-        )
+        zlib.decompress(base64.urlsafe_b64decode(encoded_diagram_source))
     )
 
 
@@ -56,29 +50,29 @@ def decode_src(encoded_diagram_source: str):
 # More precisely, a dictionary, which contains both the choices of diagram_type (as
 # keys) and the corresponding output_format each support (as values).
 output_formats = {
-    'blockdiag': ['png', 'svg', 'pdf'],
-    'bpmn': ['svg'],
-    'bytefield': ['svg'],
-    'seqdiag': ['png', 'svg', 'pdf'],
-    'actdiag': ['png', 'svg', 'pdf'],
-    'nwdiag': ['png', 'svg', 'pdf'],
-    'packetdiag': ['png', 'svg', 'pdf'],
-    'rackdiag': ['png', 'svg', 'pdf'],
-    'c4plantuml': ['png', 'svg', 'jpeg', 'base64'],  # manually replaced c4withplantuml
-    'ditaa': ['png', 'svg'],
-    'erd': ['png', 'svg', 'jpeg', 'pdf'],
-    'excalidraw': ['svg'],
-    'graphviz': ['png', 'svg', 'jpeg', 'pdf'],
-    'mermaid': ['svg'],
-    'nomnoml': ['svg'],
-    'pikchr': ['svg'],
-    'plantuml': ['png', 'svg', 'jpeg', 'base64'],
-    'structurizr': ['svg'],
-    'svgbob': ['svg'],
-    'umlet': ['png', 'svg', 'jpeg'],
-    'vega': ['png', 'svg', 'pdf'],
-    'vegalite': ['png', 'svg', 'pdf'],
-    'wavedrom': ['svg'],
+    "blockdiag": ["png", "svg", "pdf"],
+    "bpmn": ["svg"],
+    "bytefield": ["svg"],
+    "seqdiag": ["png", "svg", "pdf"],
+    "actdiag": ["png", "svg", "pdf"],
+    "nwdiag": ["png", "svg", "pdf"],
+    "packetdiag": ["png", "svg", "pdf"],
+    "rackdiag": ["png", "svg", "pdf"],
+    "c4plantuml": ["png", "svg", "jpeg", "base64"],  # manually replaced c4withplantuml
+    "ditaa": ["png", "svg"],
+    "erd": ["png", "svg", "jpeg", "pdf"],
+    "excalidraw": ["svg"],
+    "graphviz": ["png", "svg", "jpeg", "pdf"],
+    "mermaid": ["svg"],
+    "nomnoml": ["svg"],
+    "pikchr": ["svg"],
+    "plantuml": ["png", "svg", "jpeg", "base64"],
+    "structurizr": ["svg"],
+    "svgbob": ["svg"],
+    "umlet": ["png", "svg", "jpeg"],
+    "vega": ["png", "svg", "pdf"],
+    "vegalite": ["png", "svg", "pdf"],
+    "wavedrom": ["svg"],
 }
 diagram_types = set(output_formats)
 
@@ -89,14 +83,14 @@ OutputFormatOptions = Literal.__getitem__(
     tuple(sorted(set(chain.from_iterable(output_formats.values()))))
 )
 
-url_template = 'https://kroki.io/{diagram_type}/{output_format}/{diagram_source}'
+url_template = "https://kroki.io/{diagram_type}/{output_format}/{diagram_source}"
 
 
 @validate_literal
 def diagram_image_bytes(
-    diagram_source: str = 'Bob->Alice : Hello!',
-    diagram_type: DiagramKindOptions = 'plantuml',
-    output_format: OutputFormatOptions = 'svg',
+    diagram_source: str = "Bob->Alice : Hello!",
+    diagram_type: DiagramKindOptions = "plantuml",
+    output_format: OutputFormatOptions = "svg",
 ):
     """
     Get the bytes of a diagram image.
@@ -110,7 +104,7 @@ def diagram_image_bytes(
     url = url_template.format(
         diagram_type=diagram_type,
         output_format=output_format,
-        diagram_source=encode_src(diagram_source)
+        diagram_source=encode_src(diagram_source),
     )
     r = requests.get(url)
     if r.status_code == 200:
@@ -118,10 +112,11 @@ def diagram_image_bytes(
     else:
         # TODO: Do r.raise_for_status() instead?
         raise RuntimeError(
-            f'Request returned with an error code {r.status_code}. Content: \n{r.content}'
+            f"Request returned with an error code {r.status_code}. Content: \n{r.content}"
         )
 
-svg_re = r'(?:<\?xml\b[^>]*>[^<]*)?(?:<!--.*?-->[^<]*)*(?:<svg|<!DOCTYPE svg)\b'
+
+svg_re = r"(?:<\?xml\b[^>]*>[^<]*)?(?:<!--.*?-->[^<]*)*(?:<svg|<!DOCTYPE svg)\b"
 svg_re = re.compile(svg_re.encode(), re.DOTALL)
 
 
@@ -130,7 +125,6 @@ def is_svg(b: bytes):
 
 
 def bytes_to_image(b: bytes):
-
     if is_svg(b):
         return SVG(b)
     else:
@@ -138,16 +132,16 @@ def bytes_to_image(b: bytes):
 
 
 diagram_image = wrap(diagram_image_bytes, egress=bytes_to_image)
-
+kroki = diagram_image  # alias
 
 from IPython.core.magic import Magics, cell_magic, magics_class
 
 
 # see https://kroki.io/examples.html#wbs for working examples
 
+
 @magics_class
 class KrokiMagic(Magics):
-
     @cell_magic
     def kroki(self, line, cell):
         return diagram_image(cell, *line.split())
@@ -155,6 +149,7 @@ class KrokiMagic(Magics):
 
 def load_ipython_extension(ipython):
     ipython.register_magics(KrokiMagic)
+
 
 # --------------------------------------------------------------------------------------
 
