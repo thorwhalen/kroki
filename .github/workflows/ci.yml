@@ -90,5 +90,5 @@ jobs:
       - name: Push Changes
         run: pack check-in "**CI** Formatted code + Updated version number and documentation. [skip ci]" --auto-choose-default-action --bypass-docstring-validation --bypass-tests --bypass-code-formatting --verbose
 
-      - name: Tag Repository
-        run: isee tag-repo $VERSION
+      # - name: Tag Repository
+      #   run: isee tag-repo $VERSION
