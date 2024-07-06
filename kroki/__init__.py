@@ -132,6 +132,12 @@ def bytes_to_image(b: bytes):
 
 
 diagram_image = wrap(diagram_image_bytes, egress=bytes_to_image)
+mermaid_image = wrap(
+    partial(diagram_image_bytes, diagram_type='mermaid'), egress=bytes_to_image
+)
+graphviz_image = wrap(
+    partial(diagram_image_bytes, diagram_type='graphviz'), egress=bytes_to_image
+)
 kroki = diagram_image  # alias
 
 from IPython.core.magic import Magics, cell_magic, magics_class
