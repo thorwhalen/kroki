@@ -123,7 +123,6 @@ output_formats['mermaid']
 
 
 
-
     ['svg']
 
 
@@ -134,8 +133,26 @@ output_formats['seqdiag']
 ```
 
 
-
-
     ['png', 'svg', 'pdf']
 
 
+
+# Misc
+
+The `kroki` function is just an alias of `diagram_image` which itself, is the composition of `diagram_image_bytes` and `bytes_to_image` to get an iPython image object as your output (which results in displaying the image when it's the last command of your cell). 
+
+The default `diagram_type` of `diagram_image` is `plantuml`. 
+We also made some ready-to-use `mermaid_image` and `graphviz_image` by fixing `diagram_type` with `functools.partial`. 
+
+```python
+diagram_image = wrap(diagram_image_bytes, egress=bytes_to_image)
+mermaid_image = wrap(
+    partial(diagram_image_bytes, diagram_type='mermaid'), egress=bytes_to_image
+)
+graphviz_image = wrap(
+    partial(diagram_image_bytes, diagram_type='graphviz'), egress=bytes_to_image
+)
+kroki = diagram_image  # alias
+```
+
+You can import these directory from `kroki`.
