@@ -58,21 +58,26 @@ output_formats = {
     "nwdiag": ["png", "svg", "pdf"],
     "packetdiag": ["png", "svg", "pdf"],
     "rackdiag": ["png", "svg", "pdf"],
-    "c4plantuml": ["png", "svg", "jpeg", "base64"],  # manually replaced c4withplantuml
+    "c4plantuml": ["png", "svg", "pdf", "txt", "base64"],  # manually replaced c4withplantuml
+    "d2": ["svg"],
+    "dbml": ["svg"],
     "ditaa": ["png", "svg"],
     "erd": ["png", "svg", "jpeg", "pdf"],
     "excalidraw": ["svg"],
     "graphviz": ["png", "svg", "jpeg", "pdf"],
-    "mermaid": ["svg"],
+    "mermaid": ["png", "svg"],
     "nomnoml": ["svg"],
     "pikchr": ["svg"],
-    "plantuml": ["png", "svg", "jpeg", "base64"],
-    "structurizr": ["svg"],
+    "plantuml": ["png", "svg", "pdf", "txt", "base64"],
+    "structurizr": ["png", "svg", "pdf", "txt", "base64"],
     "svgbob": ["svg"],
+    "symbolator": ["svg"],
+    "tikz": ["png", "svg", "jpeg", "pdf"],
     "umlet": ["png", "svg", "jpeg"],
     "vega": ["png", "svg", "pdf"],
     "vegalite": ["png", "svg", "pdf"],
     "wavedrom": ["svg"],
+    "wireviz": ["png", "svg"],
 }
 diagram_types = set(output_formats)
 
