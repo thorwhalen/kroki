@@ -58,7 +58,13 @@ output_formats = {
     "nwdiag": ["png", "svg", "pdf"],
     "packetdiag": ["png", "svg", "pdf"],
     "rackdiag": ["png", "svg", "pdf"],
-    "c4plantuml": ["png", "svg", "pdf", "txt", "base64"],  # manually replaced c4withplantuml
+    "c4plantuml": [
+        "png",
+        "svg",
+        "pdf",
+        "txt",
+        "base64",
+    ],  # manually replaced c4withplantuml
     "d2": ["svg"],
     "dbml": ["svg"],
     "ditaa": ["png", "svg"],
@@ -138,10 +144,10 @@ def bytes_to_image(b: bytes):
 
 diagram_image = wrap(diagram_image_bytes, egress=bytes_to_image)
 mermaid_image = wrap(
-    partial(diagram_image_bytes, diagram_type='mermaid'), egress=bytes_to_image
+    partial(diagram_image_bytes, diagram_type="mermaid"), egress=bytes_to_image
 )
 graphviz_image = wrap(
-    partial(diagram_image_bytes, diagram_type='graphviz'), egress=bytes_to_image
+    partial(diagram_image_bytes, diagram_type="graphviz"), egress=bytes_to_image
 )
 kroki = diagram_image  # alias
 
