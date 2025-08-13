@@ -1,0 +1,303 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kroki &mdash; kroki 0.1.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=fd825880"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            kroki
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../module_docs/kroki.html">kroki</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../module_docs/kroki/test.html">kroki.test</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">kroki</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">kroki</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for kroki</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Kroki from python&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">base64</span><span class="o">,</span><span class="w"> </span><span class="nn">zlib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">SVG</span><span class="p">,</span> <span class="n">display</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">i2</span><span class="w"> </span><span class="kn">import</span> <span class="n">validate_literal</span><span class="p">,</span> <span class="n">wrap</span><span class="p">,</span> <span class="n">Pipe</span>
+
+<span class="n">_ascii_decode</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="nb">bytes</span><span class="o">.</span><span class="n">decode</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;ascii&quot;</span><span class="p">)</span>
+<span class="n">_utf8_decode</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="nb">bytes</span><span class="o">.</span><span class="n">decode</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+<span class="n">_zlib_compress_level_9</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">zlib</span><span class="o">.</span><span class="n">compress</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="encode_src">
+<a class="viewcode-back" href="../module_docs/kroki.html#kroki.encode_src">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">encode_src</span><span class="p">(</span><span class="n">diagram_source</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Encode a diagram source string into a base64 string that can be used in a URL.</span>
+<span class="sd">    :param diagram_source: The diagram source string.</span>
+<span class="sd">    :return: The encoded string.</span>
+
+<span class="sd">    &gt;&gt;&gt; encode_src(&#39;Bob-&gt;Alice : Hello!&#39;)</span>
+<span class="sd">    &#39;eNpzyk_StXPMyUxOVbBS8EjNyclXBAA7UAXs&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_ascii_decode</span><span class="p">(</span>
+        <span class="n">base64</span><span class="o">.</span><span class="n">urlsafe_b64encode</span><span class="p">(</span><span class="n">_zlib_compress_level_9</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">diagram_source</span><span class="p">)))</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="decode_src">
+<a class="viewcode-back" href="../module_docs/kroki.html#kroki.decode_src">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">decode_src</span><span class="p">(</span><span class="n">encoded_diagram_source</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decode a diagram source string from a base64 string.</span>
+
+<span class="sd">    :param encoded_diagram_source: The encoded diagram source string.</span>
+<span class="sd">    :return: The decoded string.</span>
+
+<span class="sd">    &gt;&gt;&gt; decode_src(&#39;eNpzyk_StXPMyUxOVbBS8EjNyclXBAA7UAXs&#39;)</span>
+<span class="sd">    &#39;Bob-&gt;Alice : Hello!&#39;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_utf8_decode</span><span class="p">(</span>
+        <span class="n">zlib</span><span class="o">.</span><span class="n">decompress</span><span class="p">(</span><span class="n">base64</span><span class="o">.</span><span class="n">urlsafe_b64decode</span><span class="p">(</span><span class="n">encoded_diagram_source</span><span class="p">))</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="c1"># The output formats supported by each diagram type.</span>
+<span class="c1"># More precisely, a dictionary, which contains both the choices of diagram_type (as</span>
+<span class="c1"># keys) and the corresponding output_format each support (as values).</span>
+<span class="n">output_formats</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;blockdiag&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">,</span> <span class="s2">&quot;pdf&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;bpmn&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;svg&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;bytefield&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;svg&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;seqdiag&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">,</span> <span class="s2">&quot;pdf&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;actdiag&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">,</span> <span class="s2">&quot;pdf&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;nwdiag&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">,</span> <span class="s2">&quot;pdf&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;packetdiag&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">,</span> <span class="s2">&quot;pdf&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;rackdiag&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">,</span> <span class="s2">&quot;pdf&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;c4plantuml&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;png&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;svg&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pdf&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;txt&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;base64&quot;</span><span class="p">,</span>
+    <span class="p">],</span>  <span class="c1"># manually replaced c4withplantuml</span>
+    <span class="s2">&quot;d2&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;svg&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;dbml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;svg&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;ditaa&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;erd&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">,</span> <span class="s2">&quot;pdf&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;excalidraw&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;svg&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;graphviz&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">,</span> <span class="s2">&quot;pdf&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;mermaid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;nomnoml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;svg&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;pikchr&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;svg&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;plantuml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">,</span> <span class="s2">&quot;pdf&quot;</span><span class="p">,</span> <span class="s2">&quot;txt&quot;</span><span class="p">,</span> <span class="s2">&quot;base64&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;structurizr&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">,</span> <span class="s2">&quot;pdf&quot;</span><span class="p">,</span> <span class="s2">&quot;txt&quot;</span><span class="p">,</span> <span class="s2">&quot;base64&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;svgbob&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;svg&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;symbolator&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;svg&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;tikz&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">,</span> <span class="s2">&quot;pdf&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;umlet&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;vega&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">,</span> <span class="s2">&quot;pdf&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;vegalite&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">,</span> <span class="s2">&quot;pdf&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;wavedrom&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;svg&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;wireviz&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">],</span>
+<span class="p">}</span>
+<span class="n">diagram_types</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">output_formats</span><span class="p">)</span>
+
+
+<span class="c1"># TODO: Way to avoid dunder __getitem__ in the following:</span>
+<span class="n">DiagramKindOptions</span> <span class="o">=</span> <span class="n">Literal</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">diagram_types</span><span class="p">)))</span>
+<span class="n">OutputFormatOptions</span> <span class="o">=</span> <span class="n">Literal</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span>
+    <span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">output_formats</span><span class="o">.</span><span class="n">values</span><span class="p">()))))</span>
+<span class="p">)</span>
+
+<span class="n">url_template</span> <span class="o">=</span> <span class="s2">&quot;https://kroki.io/</span><span class="si">{diagram_type}</span><span class="s2">/</span><span class="si">{output_format}</span><span class="s2">/</span><span class="si">{diagram_source}</span><span class="s2">&quot;</span>
+
+
+<div class="viewcode-block" id="diagram_image_bytes">
+<a class="viewcode-back" href="../module_docs/kroki.html#kroki.diagram_image_bytes">[docs]</a>
+<span class="nd">@validate_literal</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">diagram_image_bytes</span><span class="p">(</span>
+    <span class="n">diagram_source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Bob-&gt;Alice : Hello!&quot;</span><span class="p">,</span>
+    <span class="n">diagram_type</span><span class="p">:</span> <span class="n">DiagramKindOptions</span> <span class="o">=</span> <span class="s2">&quot;plantuml&quot;</span><span class="p">,</span>
+    <span class="n">output_format</span><span class="p">:</span> <span class="n">OutputFormatOptions</span> <span class="o">=</span> <span class="s2">&quot;svg&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the bytes of a diagram image.</span>
+
+<span class="sd">    :param diagram_source: The diagram source string.</span>
+<span class="sd">    :param diagram_type: The diagram type.</span>
+<span class="sd">    :param output_format: The output format.</span>
+<span class="sd">    :return: The bytes of the diagram image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># if diagram_format not in</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">url_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">diagram_type</span><span class="o">=</span><span class="n">diagram_type</span><span class="p">,</span>
+        <span class="n">output_format</span><span class="o">=</span><span class="n">output_format</span><span class="p">,</span>
+        <span class="n">diagram_source</span><span class="o">=</span><span class="n">encode_src</span><span class="p">(</span><span class="n">diagram_source</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">content</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># TODO: Do r.raise_for_status() instead?</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Request returned with an error code </span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">. Content: </span><span class="se">\n</span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">content</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span></div>
+
+
+
+<span class="n">svg_re</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;(?:&lt;\?xml\b[^&gt;]*&gt;[^&lt;]*)?(?:&lt;!--.*?--&gt;[^&lt;]*)*(?:&lt;svg|&lt;!DOCTYPE svg)\b&quot;</span>
+<span class="n">svg_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">svg_re</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">is_svg</span><span class="p">(</span><span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">svg_re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">bytes_to_image</span><span class="p">(</span><span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">is_svg</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">SVG</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Image</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+
+
+<span class="n">diagram_image</span> <span class="o">=</span> <span class="n">wrap</span><span class="p">(</span><span class="n">diagram_image_bytes</span><span class="p">,</span> <span class="n">egress</span><span class="o">=</span><span class="n">bytes_to_image</span><span class="p">)</span>
+<span class="n">mermaid_image</span> <span class="o">=</span> <span class="n">wrap</span><span class="p">(</span>
+    <span class="n">partial</span><span class="p">(</span><span class="n">diagram_image_bytes</span><span class="p">,</span> <span class="n">diagram_type</span><span class="o">=</span><span class="s2">&quot;mermaid&quot;</span><span class="p">),</span> <span class="n">egress</span><span class="o">=</span><span class="n">bytes_to_image</span>
+<span class="p">)</span>
+<span class="n">graphviz_image</span> <span class="o">=</span> <span class="n">wrap</span><span class="p">(</span>
+    <span class="n">partial</span><span class="p">(</span><span class="n">diagram_image_bytes</span><span class="p">,</span> <span class="n">diagram_type</span><span class="o">=</span><span class="s2">&quot;graphviz&quot;</span><span class="p">),</span> <span class="n">egress</span><span class="o">=</span><span class="n">bytes_to_image</span>
+<span class="p">)</span>
+<span class="n">kroki</span> <span class="o">=</span> <span class="n">diagram_image</span>  <span class="c1"># alias</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">IPython.core.magic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Magics</span><span class="p">,</span> <span class="n">cell_magic</span><span class="p">,</span> <span class="n">magics_class</span>
+
+
+<span class="c1"># see https://kroki.io/examples.html#wbs for working examples</span>
+
+
+<div class="viewcode-block" id="KrokiMagic">
+<a class="viewcode-back" href="../module_docs/kroki.html#kroki.KrokiMagic">[docs]</a>
+<span class="nd">@magics_class</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">KrokiMagic</span><span class="p">(</span><span class="n">Magics</span><span class="p">):</span>
+    <span class="nd">@cell_magic</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">kroki</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">cell</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">diagram_image</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="o">*</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">())</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">load_ipython_extension</span><span class="p">(</span><span class="n">ipython</span><span class="p">):</span>
+    <span class="n">ipython</span><span class="o">.</span><span class="n">register_magics</span><span class="p">(</span><span class="n">KrokiMagic</span><span class="p">)</span>
+
+
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+
+<span class="c1"># Miscellaneous notes ------------------------------------------------------------------</span>
+<span class="c1"># Note: Equivalent to the following, but didn&#39;t use to not need i2</span>
+<span class="c1"># encode_src = Pipe(</span>
+<span class="c1">#     str.encode,</span>
+<span class="c1">#     partial(zlib.compress, level=9),</span>
+<span class="c1">#     base64.urlsafe_b64encode,</span>
+<span class="c1">#     partial(bytes.decode, encoding=&#39;ascii&#39;),</span>
+<span class="c1"># )</span>
+<span class="c1">#</span>
+<span class="c1"># decode_src = Pipe(</span>
+<span class="c1">#     base64.urlsafe_b64decode, zlib.decompress, partial(bytes.decode, encoding=&#39;utf8&#39;)</span>
+<span class="c1"># )</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
