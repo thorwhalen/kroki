@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "kroki"
-version = "0.1.6"
+version = "0.1.7"
 description = "Access kroki from python"
 readme = "README.md"
 requires-python = ">=3.10"
