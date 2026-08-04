@@ -24,7 +24,7 @@ You can get the bytes of an image of a diagram like so:
 ```python
 from kroki import diagram_image_bytes
 
-svn_bytes = diagram_image_bytes('Bob->Alice : Hello!')
+svn_bytes = diagram_image_bytes("Bob->Alice : Hello!")
 # which you can then save in a file...
 ```
 
@@ -34,7 +34,7 @@ When in a jupyter notebook though, you have a more convenient function that will
 ```python
 from kroki import diagram_image
 
-diagram_image('Bob->Alice : Hello!')
+diagram_image("Bob->Alice : Hello!")
 ```
 
 <img width="123" alt="image" src="https://user-images.githubusercontent.com/1906276/211854316-501ec323-bd26-4428-a722-2fa200bfbea3.png">
@@ -46,14 +46,14 @@ But you have other choices.
 
 
 ```python
-diagram_image('digraph D {Alice -> Bob, Charles -> Darwin}', diagram_type='graphviz')
+diagram_image("digraph D {Alice -> Bob, Charles -> Darwin}", diagram_type="graphviz")
 ```
 
 <img width="240" alt="image" src="https://user-images.githubusercontent.com/1906276/212101184-376b2565-c241-4bcb-81f9-50c1eb538675.png">
 
 
 ```python
-png_bytes = diagram_image_bytes('Bob->Alice : Hello!', output_format='png')
+png_bytes = diagram_image_bytes("Bob->Alice : Hello!", output_format="png")
 png_bytes[:7]
 ```
 
@@ -110,7 +110,7 @@ Not all `output_format` values are supported for all diagram types. To which are
 ```python
 from kroki import output_formats
 
-output_formats['plantuml']
+output_formats["plantuml"]
 ```
 
 
@@ -118,7 +118,7 @@ output_formats['plantuml']
 
 
 ```python
-output_formats['mermaid']
+output_formats["mermaid"]
 ```
 
 
@@ -129,7 +129,7 @@ output_formats['mermaid']
 
 
 ```python
-output_formats['seqdiag']
+output_formats["seqdiag"]
 ```
 
 
@@ -147,10 +147,10 @@ We also made some ready-to-use `mermaid_image` and `graphviz_image` by fixing `d
 ```python
 diagram_image = wrap(diagram_image_bytes, egress=bytes_to_image)
 mermaid_image = wrap(
-    partial(diagram_image_bytes, diagram_type='mermaid'), egress=bytes_to_image
+    partial(diagram_image_bytes, diagram_type="mermaid"), egress=bytes_to_image
 )
 graphviz_image = wrap(
-    partial(diagram_image_bytes, diagram_type='graphviz'), egress=bytes_to_image
+    partial(diagram_image_bytes, diagram_type="graphviz"), egress=bytes_to_image
 )
 kroki = diagram_image  # alias
 ```
