@@ -1,0 +1,13 @@
+# kroki
+
+> Access kroki from python
+
+
+## Pages in this subsection
+
+- [kroki](kroki.html.md): Kroki from python
+- [kroki.test](kroki.test.html.md): Backwards compatible shim for the legacy &#96;kroki.test&#96; module.
+
+## Optional
+
+- [Top-level llms.txt](../llms.txt): Complete documentation index.

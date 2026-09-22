@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "built_at": "2026-09-22T12:52:42Z",
+  "package": {
+    "name": "kroki",
+    "version": "0.1.7",
+    "display_name": "kroki",
+    "source": "pyproject.toml"
+  },
+  "git": {
+    "available": true,
+    "commit": "fa5f6a913090363a2005dc8453274ca8c3c62e01",
+    "short_commit": "fa5f6a9",
+    "branch": "main",
+    "tags": [],
+    "dirty": false,
+    "remote_url": "https://github.com/thorwhalen/kroki",
+    "commit_url": "https://github.com/thorwhalen/kroki/commit/fa5f6a913090363a2005dc8453274ca8c3c62e01",
+    "error": null
+  },
+  "ci": {
+    "provider": "github",
+    "repository": "thorwhalen/kroki",
+    "sha": "fa5f6a913090363a2005dc8453274ca8c3c62e01",
+    "sha_in_history": true,
+    "ref": "refs/heads/main",
+    "ref_name": "main",
+    "run_id": "35729710996",
+    "run_url": "https://github.com/thorwhalen/kroki/actions/runs/35729710996",
+    "server_url": "https://github.com"
+  },
+  "tools": {
+    "epythet": "0.2.12",
+    "sphinx": "9.1.0",
+    "docutils": "0.22.4",
+    "python": "3.12.14"
+  },
+  "config": {
+    "theme": "auto",
+    "html_theme": "furo",
+    "accent": "#4e6200",
+    "mode": "auto",
+    "api_generator": "autosummary",
+    "ignore": [
+      "tests/",
+      "scrap/",
+      "examples/"
+    ],
+    "agent_outputs": true,
+    "aggregates": [
+      "md"
+    ],
+    "ai_artifacts": true,
+    "provenance": true,
+    "docs_dir": "docsrc"
+  },
+  "site": {
+    "modules_documented": 2,
+    "objects_documented": 4
+  },
+  "pypi": {
+    "checked": true,
+    "latest": "0.1.7",
+    "relation": "same",
+    "error": null
+  },
+  "reproduce": "git clone https://github.com/thorwhalen/kroki && cd kroki\ngit checkout fa5f6a913090363a2005dc8453274ca8c3c62e01\npip install \"epythet==0.2.12\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "warnings": [],
+  "alignment": {
+    "aligned": true,
+    "notes": []
+  }
+}

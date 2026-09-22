@@ -1,4 +1,0 @@
-kroki.test
-==========
-.. automodule:: kroki.test
-   :members:

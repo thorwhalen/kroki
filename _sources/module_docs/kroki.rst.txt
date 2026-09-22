@@ -1,4 +1,0 @@
-kroki
-=====
-.. automodule:: kroki
-   :members:

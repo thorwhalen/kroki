@@ -1,0 +1,30 @@
+﻿kroki
+=====
+
+.. automodule:: kroki
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      bytes_to_image
+      decode_src
+      diagram_image_bytes
+      encode_src
+      is_svg
+      load_ipython_extension
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      KrokiMagic
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   test

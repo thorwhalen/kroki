@@ -1,0 +1,12 @@
+kroki.test
+==========
+
+.. automodule:: kroki.test
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      test_code_codecs
+   
