@@ -4,6 +4,12 @@
 .. automodule:: kroki
 
    
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      ISOLATE_SVG
+   
    .. rubric:: Functions
 
    .. autosummary::

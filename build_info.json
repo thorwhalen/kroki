@@ -1,32 +1,32 @@
 {
   "schema_version": 1,
-  "built_at": "2026-10-13T22:18:39Z",
+  "built_at": "2026-10-13T23:07:48Z",
   "package": {
     "name": "kroki",
-    "version": "0.1.8",
+    "version": "0.1.9",
     "display_name": "kroki",
     "source": "pyproject.toml"
   },
   "git": {
     "available": true,
-    "commit": "87e92d30e16ce107751dad3722f62008f380bf32",
-    "short_commit": "87e92d3",
+    "commit": "33be446709ca25a6ac1a0ec5eb3b271438acfb9f",
+    "short_commit": "33be446",
     "branch": "main",
     "tags": [],
     "dirty": false,
     "remote_url": "https://github.com/thorwhalen/kroki",
-    "commit_url": "https://github.com/thorwhalen/kroki/commit/87e92d30e16ce107751dad3722f62008f380bf32",
+    "commit_url": "https://github.com/thorwhalen/kroki/commit/33be446709ca25a6ac1a0ec5eb3b271438acfb9f",
     "error": null
   },
   "ci": {
     "provider": "github",
     "repository": "thorwhalen/kroki",
-    "sha": "87e92d30e16ce107751dad3722f62008f380bf32",
+    "sha": "33be446709ca25a6ac1a0ec5eb3b271438acfb9f",
     "sha_in_history": true,
     "ref": "refs/heads/main",
     "ref_name": "main",
-    "run_id": "38476722085",
-    "run_url": "https://github.com/thorwhalen/kroki/actions/runs/38476722085",
+    "run_id": "38482139913",
+    "run_url": "https://github.com/thorwhalen/kroki/actions/runs/38482139913",
     "server_url": "https://github.com"
   },
   "tools": {
@@ -56,20 +56,20 @@
   },
   "site": {
     "modules_documented": 2,
-    "objects_documented": 7
+    "objects_documented": 8
   },
   "pypi": {
     "checked": true,
-    "latest": "0.1.9",
+    "latest": "0.1.10",
     "relation": "behind",
     "error": null
   },
-  "reproduce": "git clone https://github.com/thorwhalen/kroki && cd kroki\ngit checkout 87e92d30e16ce107751dad3722f62008f380bf32\npip install \"epythet==0.2.17\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "reproduce": "git clone https://github.com/thorwhalen/kroki && cd kroki\ngit checkout 33be446709ca25a6ac1a0ec5eb3b271438acfb9f\npip install \"epythet==0.2.17\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
   "warnings": [],
   "alignment": {
     "aligned": false,
     "notes": [
-      "The documented version (0.1.8) is behind the latest release on PyPI (0.1.9): `pip install kroki` gives newer code than these docs describe."
+      "The documented version (0.1.9) is behind the latest release on PyPI (0.1.10): `pip install kroki` gives newer code than these docs describe."
     ]
   }
 }

@@ -2,6 +2,11 @@
 
 Kroki from python
 
+### Module Attributes
+
+| [`ISOLATE_SVG`](#kroki.ISOLATE_SVG)   | Whether SVGs are shown isolated (as an image) when a caller does not say.   |
+|----------------------------------------------------------------|-----------------------------------------------------------------------------|
+
 ### Functions
 
 | [`bytes_to_image`](#kroki.bytes_to_image)(b, \*[, isolate_svg])       | A displayable object for diagram bytes: an SVG for SVG bytes, else an Image.   |
@@ -17,7 +22,13 @@ Kroki from python
 
 | [`IsolatedSVG`](#kroki.IsolatedSVG)([data, url, filename, metadata])   | An IPython `SVG` whose HTML representation cannot restyle the page.   |
 |-------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------|
-| [`KrokiMagic`](#kroki.KrokiMagic)([shell])                            |                                                                       |
+| [`KrokiMagic`](#kroki.KrokiMagic)([shell])                            | `%%kroki [diagram_type] [output_format] [--inline | --isolate]`.      |
+
+### kroki.ISOLATE_SVG *= True*
+
+Whether SVGs are shown isolated (as an image) when a caller does not say. Set it
+to `False` to inline every SVG of a notebook (`kroki.ISOLATE_SVG = False`),
+trading the protection of thorwhalen/kroki#1 for interactivity (#7).
 
 ### *class* kroki.IsolatedSVG(data=None, url=None, filename=None, metadata=None)
 
@@ -34,13 +45,22 @@ and as the `image/svg+xml` representation, for exporters that want it.
 
 Bases: `Magics`
 
-### kroki.bytes_to_image(b, , isolate_svg=True)
+`%%kroki [diagram_type] [output_format] [--inline | --isolate]`.
+
+`--inline` shows an SVG inlined, so its links, tooltips, selectable text and
+web fonts work, at the cost of letting its CSS restyle the notebook (#7);
+`--isolate` forces the safe image display. Without either, [`ISOLATE_SVG`](#kroki.ISOLATE_SVG)
+decides.
+
+### kroki.bytes_to_image(b, , isolate_svg=None)
 
 A displayable object for diagram bytes: an SVG for SVG bytes, else an Image.
 
-With `isolate_svg` (the default) an SVG is an [`IsolatedSVG`](#kroki.IsolatedSVG), shown as
-an image so its CSS cannot leak into the notebook; `False` gives the plain
-inlined `IPython.display.SVG`.
+Isolated, an SVG is an [`IsolatedSVG`](#kroki.IsolatedSVG), shown as an image so its CSS cannot
+leak into the notebook. Inlined (`isolate_svg=False`), it is the plain
+`IPython.display.SVG`: its CSS reaches the page, but its links, `<title>`
+tooltips, selectable text and external fonts work. `None` (the default)
+follows [`ISOLATE_SVG`](#kroki.ISOLATE_SVG).
 
 ### kroki.decode_src(encoded_diagram_source)
 

@@ -1,4 +1,4 @@
-> built 2026-10-13 22:18 UTC from 87e92d3 (main) · kroki 0.1.8. Details: build_info.json
+> built 2026-10-13 23:07 UTC from 33be446 (main) · kroki 0.1.9. Details: build_info.json
 
 # index.html.md
 
@@ -89,6 +89,8 @@ digraph D {
 
 SVG diagrams are shown as an image (`<img src="data:image/svg+xml;...">`) rather than inlined into the page. An inlined SVG’s `<style>` block is page CSS, and mermaid’s would otherwise restyle the notebook’s own output text, e.g. turning it dark gray in dark mode. The raw SVG is still there, as `.data` on the returned object; `kroki.bytes_to_image(svg_bytes, isolate_svg=False)` gives the old inlined display.
 
+The image costs the SVG’s interactivity: no links, no `<title>` tooltips, no text selection, and no web fonts. When you need those and trust the diagram’s CSS, inline it: `%%kroki graphviz --inline` for one cell, or `kroki.ISOLATE_SVG = False` for every diagram in the notebook (then `--isolate` forces the image again). From Python, `kroki.bytes_to_image(svg_bytes, isolate_svg=False)` does the same.
+
 To see what diagram types `kroki` supports through the `diagram_types` variable.
 
 ```python
@@ -158,6 +160,11 @@ You can import these directory from `kroki`.
 
 Kroki from python
 
+### Module Attributes
+
+| [`ISOLATE_SVG`](_autosummary/kroki.html.md#kroki.ISOLATE_SVG)   | Whether SVGs are shown isolated (as an image) when a caller does not say.   |
+|----------------------------------------------------------------|-----------------------------------------------------------------------------|
+
 ### Functions
 
 | [`bytes_to_image`](_autosummary/kroki.html.md#kroki.bytes_to_image)(b, \*[, isolate_svg])       | A displayable object for diagram bytes: an SVG for SVG bytes, else an Image.   |
@@ -173,7 +180,13 @@ Kroki from python
 
 | [`IsolatedSVG`](_autosummary/kroki.html.md#kroki.IsolatedSVG)([data, url, filename, metadata])   | An IPython `SVG` whose HTML representation cannot restyle the page.   |
 |-------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------|
-| [`KrokiMagic`](_autosummary/kroki.html.md#kroki.KrokiMagic)([shell])                            |                                                                       |
+| [`KrokiMagic`](_autosummary/kroki.html.md#kroki.KrokiMagic)([shell])                            | `%%kroki [diagram_type] [output_format] [--inline | --isolate]`.      |
+
+### kroki.ISOLATE_SVG *= True*
+
+Whether SVGs are shown isolated (as an image) when a caller does not say. Set it
+to `False` to inline every SVG of a notebook (`kroki.ISOLATE_SVG = False`),
+trading the protection of thorwhalen/kroki#1 for interactivity (#7).
 
 ### *class* kroki.IsolatedSVG(data=None, url=None, filename=None, metadata=None)
 
@@ -190,13 +203,22 @@ and as the `image/svg+xml` representation, for exporters that want it.
 
 Bases: `Magics`
 
-### kroki.bytes_to_image(b, , isolate_svg=True)
+`%%kroki [diagram_type] [output_format] [--inline | --isolate]`.
+
+`--inline` shows an SVG inlined, so its links, tooltips, selectable text and
+web fonts work, at the cost of letting its CSS restyle the notebook (#7);
+`--isolate` forces the safe image display. Without either, [`ISOLATE_SVG`](_autosummary/kroki.html.md#kroki.ISOLATE_SVG)
+decides.
+
+### kroki.bytes_to_image(b, , isolate_svg=None)
 
 A displayable object for diagram bytes: an SVG for SVG bytes, else an Image.
 
-With `isolate_svg` (the default) an SVG is an [`IsolatedSVG`](_autosummary/kroki.html.md#kroki.IsolatedSVG), shown as
-an image so its CSS cannot leak into the notebook; `False` gives the plain
-inlined `IPython.display.SVG`.
+Isolated, an SVG is an [`IsolatedSVG`](_autosummary/kroki.html.md#kroki.IsolatedSVG), shown as an image so its CSS cannot
+leak into the notebook. Inlined (`isolate_svg=False`), it is the plain
+`IPython.display.SVG`: its CSS reaches the page, but its links, `<title>`
+tooltips, selectable text and external fonts work. `None` (the default)
+follows [`ISOLATE_SVG`](_autosummary/kroki.html.md#kroki.ISOLATE_SVG).
 
 ### kroki.decode_src(encoded_diagram_source)
 
@@ -296,18 +318,18 @@ pytest, so importing `kroki.test` still requires nothing beyond `kroki` itself.
 
 # About this build
 
-This documentation was built on **2026-10-13 22:18 UTC** from commit <a href="https://github.com/thorwhalen/kroki/commit/87e92d30e16ce107751dad3722f62008f380bf32"><code>87e92d3</code></a> on branch <code>main</code>, for **kroki 0.1.8** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-13 23:07 UTC** from commit <a href="https://github.com/thorwhalen/kroki/commit/33be446709ca25a6ac1a0ec5eb3b271438acfb9f"><code>33be446</code></a> on branch <code>main</code>, for **kroki 0.1.9** (from <code>pyproject.toml</code>).
 
 #### WARNING
 The documentation and the package may be misaligned:
 
-- The documented version (0.1.8) is behind the latest release on PyPI (0.1.9): `pip install kroki` gives newer code than these docs describe.
+- The documented version (0.1.9) is behind the latest release on PyPI (0.1.10): `pip install kroki` gives newer code than these docs describe.
 
 ## Source
 
 |                     |                                                                                                                                                         |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/kroki/commit/87e92d30e16ce107751dad3722f62008f380bf32"><code>87e92d30e16ce107751dad3722f62008f380bf32</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/kroki/commit/33be446709ca25a6ac1a0ec5eb3b271438acfb9f"><code>33be446709ca25a6ac1a0ec5eb3b271438acfb9f</code></a> |
 | Branch              | <code>main</code>                                                                                                                                       |
 | Tags at this commit | none                                                                                                                                                    |
 | Working tree        | clean                                                                                                                                                   |
@@ -318,9 +340,9 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/kroki</code>                                                              |
-| Run          | <a href="https://github.com/thorwhalen/kroki/actions/runs/38476722085">38476722085</a>     |
+| Run          | <a href="https://github.com/thorwhalen/kroki/actions/runs/38482139913">38482139913</a>     |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>87e92d30e16ce107751dad3722f62008f380bf32</code> (in the history of the built commit) |
+| Event commit | <code>33be446709ca25a6ac1a0ec5eb3b271438acfb9f</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -345,13 +367,13 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/kroki/0.1.9/">0.1.9</a>, newer than the documented version (0.1.8).
+Latest release: <a href="https://pypi.org/project/kroki/0.1.10/">0.1.10</a>, newer than the documented version (0.1.9).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/kroki && cd kroki
-git checkout 87e92d30e16ce107751dad3722f62008f380bf32
+git checkout 33be446709ca25a6ac1a0ec5eb3b271438acfb9f
 pip install "epythet==0.2.17"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
