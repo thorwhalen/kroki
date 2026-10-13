@@ -190,13 +190,23 @@ class IsolatedSVG(SVG):
         return svg_to_img_html(self.data)
 
 
-def bytes_to_image(b: bytes, *, isolate_svg: bool = True):
+#: Whether SVGs are shown isolated (as an image) when a caller does not say. Set it
+#: to ``False`` to inline every SVG of a notebook (``kroki.ISOLATE_SVG = False``),
+#: trading the protection of thorwhalen/kroki#1 for interactivity (#7).
+ISOLATE_SVG = True
+
+
+def bytes_to_image(b: bytes, *, isolate_svg: bool | None = None):
     """A displayable object for diagram bytes: an SVG for SVG bytes, else an Image.
 
-    With ``isolate_svg`` (the default) an SVG is an :class:`IsolatedSVG`, shown as
-    an image so its CSS cannot leak into the notebook; ``False`` gives the plain
-    inlined ``IPython.display.SVG``.
+    Isolated, an SVG is an :class:`IsolatedSVG`, shown as an image so its CSS cannot
+    leak into the notebook. Inlined (``isolate_svg=False``), it is the plain
+    ``IPython.display.SVG``: its CSS reaches the page, but its links, ``<title>``
+    tooltips, selectable text and external fonts work. ``None`` (the default)
+    follows :data:`ISOLATE_SVG`.
     """
+    if isolate_svg is None:
+        isolate_svg = ISOLATE_SVG
     if is_svg(b):
         return IsolatedSVG(b) if isolate_svg else SVG(b)
     else:
@@ -218,11 +228,46 @@ from IPython.core.magic import Magics, cell_magic, magics_class
 # see https://kroki.io/examples.html#wbs for working examples
 
 
+_INLINE_FLAGS = {"--inline": False, "--isolate": True}
+
+
+def _parse_magic_line(line: str) -> tuple[list[str], bool | None]:
+    """Split a ``%%kroki`` line into positional args and the SVG isolation choice.
+
+    >>> _parse_magic_line("graphviz --inline")
+    (['graphviz'], False)
+    >>> _parse_magic_line("mermaid svg")
+    (['mermaid', 'svg'], None)
+    """
+    args, isolate = [], None
+    for token in line.split():
+        if token in _INLINE_FLAGS:
+            if isolate is not None and isolate != _INLINE_FLAGS[token]:
+                raise ValueError("%%kroki: --inline and --isolate are exclusive")
+            isolate = _INLINE_FLAGS[token]
+        elif token.startswith("-"):
+            raise ValueError(
+                f"Unknown %%kroki option {token!r}; known: {', '.join(_INLINE_FLAGS)}"
+            )
+        else:
+            args.append(token)
+    return args, isolate
+
+
 @magics_class
 class KrokiMagic(Magics):
+    """``%%kroki [diagram_type] [output_format] [--inline | --isolate]``.
+
+    ``--inline`` shows an SVG inlined, so its links, tooltips, selectable text and
+    web fonts work, at the cost of letting its CSS restyle the notebook (#7);
+    ``--isolate`` forces the safe image display. Without either, :data:`ISOLATE_SVG`
+    decides.
+    """
+
     @cell_magic
     def kroki(self, line, cell):
-        return diagram_image(cell, *line.split())
+        args, isolate = _parse_magic_line(line)
+        return bytes_to_image(diagram_image_bytes(cell, *args), isolate_svg=isolate)
 
 
 def load_ipython_extension(ipython):
