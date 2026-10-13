@@ -134,3 +134,59 @@ def test_non_200_response_raises(monkeypatch):
 
     with pytest.raises(RuntimeError, match="404"):
         diagram_image_bytes("Bob->Alice : Hello!")
+
+
+# --- an SVG's CSS must not restyle the notebook (thorwhalen/kroki#1) -------------------
+
+# The shape of a mermaid SVG: relative width, a viewBox, and a <style> whose rules
+# would apply to the whole page if the SVG were inlined.
+LEAKY_SVG = (
+    b'<svg id="mermaid-1" width="100%" xmlns="http://www.w3.org/2000/svg" '
+    b'style="max-width: 233px;" viewBox="0 0 233.5 470">'
+    b"<style>.label{color:#333;} p{margin:0;} span{fill:#333;color:#333;}</style>"
+    b'<g class="label"><text>Score</text></g></svg>'
+)
+
+
+def test_an_svg_is_shown_as_an_image_so_its_style_stays_inside_it():
+    obj = bytes_to_image(LEAKY_SVG)
+    assert isinstance(obj, SVG)  # still an SVG for every existing caller
+    html = obj._repr_html_()
+    assert html.startswith('<img src="data:image/svg+xml;base64,')
+    assert "<style" not in html and "color:#333" not in html
+    encoded = html.split("base64,", 1)[1].split('"', 1)[0]
+    assert base64.b64decode(encoded).decode() == obj.data  # the full SVG, intact
+
+
+def test_the_html_representation_is_what_jupyter_shows():
+    """Frontends pick text/html over image/svg+xml, so the image is what renders."""
+    from IPython.core.formatters import DisplayFormatter
+
+    bundle, _ = DisplayFormatter().format(bytes_to_image(LEAKY_SVG))
+    assert bundle["text/html"].startswith("<img ")
+    assert "image/svg+xml" in bundle  # kept for exporters
+
+
+def test_a_relative_width_is_capped_at_the_viewbox_width():
+    assert 'style="max-width:233.5px;width:100%"' in kroki.svg_to_img_html(LEAKY_SVG)
+
+
+def test_an_absolute_width_is_left_to_the_svg():
+    html = kroki.svg_to_img_html(b'<svg width="300" height="80" viewBox="0 0 300 80"/>')
+    assert "style=" not in html
+
+
+def test_inline_svg_is_still_available_on_request():
+    obj = bytes_to_image(LEAKY_SVG, isolate_svg=False)
+    assert type(obj) is SVG
+
+
+def test_a_hyphenated_width_attribute_is_not_the_width():
+    html = kroki.svg_to_img_html(
+        b'<svg stroke-width="2" data-width="9" width="100%" viewBox="0 0 400 300"/>'
+    )
+    assert 'max-width:400px' in html
+
+
+def test_undecodable_bytes_do_not_raise():
+    assert kroki.svg_to_img_html(b"<svg>\xe9</svg>").startswith("<img ")
