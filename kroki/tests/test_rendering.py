@@ -179,3 +179,14 @@ def test_an_absolute_width_is_left_to_the_svg():
 def test_inline_svg_is_still_available_on_request():
     obj = bytes_to_image(LEAKY_SVG, isolate_svg=False)
     assert type(obj) is SVG
+
+
+def test_a_hyphenated_width_attribute_is_not_the_width():
+    html = kroki.svg_to_img_html(
+        b'<svg stroke-width="2" data-width="9" width="100%" viewBox="0 0 400 300"/>'
+    )
+    assert 'max-width:400px' in html
+
+
+def test_undecodable_bytes_do_not_raise():
+    assert kroki.svg_to_img_html(b"<svg>\xe9</svg>").startswith("<img ")

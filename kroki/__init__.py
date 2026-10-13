@@ -136,7 +136,8 @@ def is_svg(b: bytes):
 
 
 _svg_root_re = re.compile(r"<svg\b[^>]*>", re.DOTALL)
-_attr_re = r'\b{}\s*=\s*["\']([^"\']*)["\']'
+# Not preceded by a name character or "-", so "width" never matches "stroke-width".
+_attr_re = r'(?<![\w-]){}\s*=\s*["\']([^"\']*)["\']'
 
 
 def _root_attr(svg_tag: str, name: str):
@@ -162,7 +163,7 @@ def svg_to_img_html(svg) -> str:
     True
     """
     if isinstance(svg, bytes):
-        svg = svg.decode("utf-8")
+        svg = svg.decode("utf-8", errors="replace")
     style = ""
     root = _svg_root_re.search(svg)
     if root:
