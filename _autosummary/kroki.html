@@ -254,8 +254,8 @@
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bytes_to_image</span></code>(b)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kroki.bytes_to_image" title="kroki.bytes_to_image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bytes_to_image</span></code></a>(b, *[, isolate_svg])</p></td>
+<td><p>A displayable object for diagram bytes: an SVG for SVG bytes, else an Image.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#kroki.decode_src" title="kroki.decode_src"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decode_src</span></code></a>(encoded_diagram_source)</p></td>
 <td><p>Decode a diagram source string from a base64 string.</p></td>
@@ -272,6 +272,9 @@
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_ipython_extension</span></code>(ipython)</p></td>
 <td><p></p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kroki.svg_to_img_html" title="kroki.svg_to_img_html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">svg_to_img_html</span></code></a>(svg)</p></td>
+<td><p>An <code class="docutils literal notranslate"><span class="pre">&lt;img&gt;</span></code> showing <em>svg</em> as its own document.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -279,16 +282,41 @@
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#kroki.KrokiMagic" title="kroki.KrokiMagic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KrokiMagic</span></code></a>([shell])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kroki.IsolatedSVG" title="kroki.IsolatedSVG"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsolatedSVG</span></code></a>([data, url, filename, metadata])</p></td>
+<td><p>An IPython <code class="docutils literal notranslate"><span class="pre">SVG</span></code> whose HTML representation cannot restyle the page.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kroki.KrokiMagic" title="kroki.KrokiMagic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KrokiMagic</span></code></a>([shell])</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <dl class="py class">
+<dt class="sig sig-object py" id="kroki.IsolatedSVG">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">kroki.</span></span><span class="sig-name descname"><span class="pre">IsolatedSVG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kroki.html#IsolatedSVG"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kroki.IsolatedSVG" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">SVG</span></code></p>
+<p>An IPython <code class="docutils literal notranslate"><span class="pre">SVG</span></code> whose HTML representation cannot restyle the page.</p>
+<p>Jupyter frontends (JupyterLab, the classic notebook, VS Code) prefer
+<code class="docutils literal notranslate"><span class="pre">text/html</span></code> to <code class="docutils literal notranslate"><span class="pre">image/svg+xml</span></code>, so they show <a class="reference internal" href="#kroki.svg_to_img_html" title="kroki.svg_to_img_html"><code class="xref py py-func docutils literal notranslate"><span class="pre">svg_to_img_html()</span></code></a>’s
+image instead of inlining the SVG. The raw SVG stays available as <code class="docutils literal notranslate"><span class="pre">.data</span></code>
+and as the <code class="docutils literal notranslate"><span class="pre">image/svg+xml</span></code> representation, for exporters that want it.</p>
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="kroki.KrokiMagic">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">kroki.</span></span><span class="sig-name descname"><span class="pre">KrokiMagic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kroki.html#KrokiMagic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kroki.KrokiMagic" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Magics</span></code></p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="kroki.bytes_to_image">
+<span class="sig-prename descclassname"><span class="pre">kroki.</span></span><span class="sig-name descname"><span class="pre">bytes_to_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">isolate_svg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kroki.html#bytes_to_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kroki.bytes_to_image" title="Link to this definition">¶</a></dt>
+<dd><p>A displayable object for diagram bytes: an SVG for SVG bytes, else an Image.</p>
+<p>With <code class="docutils literal notranslate"><span class="pre">isolate_svg</span></code> (the default) an SVG is an <a class="reference internal" href="#kroki.IsolatedSVG" title="kroki.IsolatedSVG"><code class="xref py py-class docutils literal notranslate"><span class="pre">IsolatedSVG</span></code></a>, shown as
+an image so its CSS cannot leak into the notebook; <code class="docutils literal notranslate"><span class="pre">False</span></code> gives the plain
+inlined <code class="docutils literal notranslate"><span class="pre">IPython.display.SVG</span></code>.</p>
 <dl class="field-list simple">
 </dl>
 </dd></dl>
@@ -299,7 +327,7 @@
 <dd><p>Decode a diagram source string from a base64 string.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>encoded_diagram_source</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – The encoded diagram source string.</p>
+<dd class="field-odd"><p><strong>encoded_diagram_source</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – The encoded diagram source string.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The decoded string.</p>
@@ -318,9 +346,9 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>diagram_source</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – The diagram source string.</p></li>
-<li><p><strong>diagram_type</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'actdiag'</span></code>, <code class="docutils literal notranslate"><span class="pre">'blockdiag'</span></code>, <code class="docutils literal notranslate"><span class="pre">'bpmn'</span></code>, <code class="docutils literal notranslate"><span class="pre">'bytefield'</span></code>, <code class="docutils literal notranslate"><span class="pre">'c4plantuml'</span></code>, <code class="docutils literal notranslate"><span class="pre">'d2'</span></code>, <code class="docutils literal notranslate"><span class="pre">'dbml'</span></code>, <code class="docutils literal notranslate"><span class="pre">'ditaa'</span></code>, <code class="docutils literal notranslate"><span class="pre">'erd'</span></code>, <code class="docutils literal notranslate"><span class="pre">'excalidraw'</span></code>, <code class="docutils literal notranslate"><span class="pre">'graphviz'</span></code>, <code class="docutils literal notranslate"><span class="pre">'mermaid'</span></code>, <code class="docutils literal notranslate"><span class="pre">'nomnoml'</span></code>, <code class="docutils literal notranslate"><span class="pre">'nwdiag'</span></code>, <code class="docutils literal notranslate"><span class="pre">'packetdiag'</span></code>, <code class="docutils literal notranslate"><span class="pre">'pikchr'</span></code>, <code class="docutils literal notranslate"><span class="pre">'plantuml'</span></code>, <code class="docutils literal notranslate"><span class="pre">'rackdiag'</span></code>, <code class="docutils literal notranslate"><span class="pre">'seqdiag'</span></code>, <code class="docutils literal notranslate"><span class="pre">'structurizr'</span></code>, <code class="docutils literal notranslate"><span class="pre">'svgbob'</span></code>, <code class="docutils literal notranslate"><span class="pre">'symbolator'</span></code>, <code class="docutils literal notranslate"><span class="pre">'tikz'</span></code>, <code class="docutils literal notranslate"><span class="pre">'umlet'</span></code>, <code class="docutils literal notranslate"><span class="pre">'vega'</span></code>, <code class="docutils literal notranslate"><span class="pre">'vegalite'</span></code>, <code class="docutils literal notranslate"><span class="pre">'wavedrom'</span></code>, <code class="docutils literal notranslate"><span class="pre">'wireviz'</span></code>]</span>) – The diagram type.</p></li>
-<li><p><strong>output_format</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'base64'</span></code>, <code class="docutils literal notranslate"><span class="pre">'jpeg'</span></code>, <code class="docutils literal notranslate"><span class="pre">'pdf'</span></code>, <code class="docutils literal notranslate"><span class="pre">'png'</span></code>, <code class="docutils literal notranslate"><span class="pre">'svg'</span></code>, <code class="docutils literal notranslate"><span class="pre">'txt'</span></code>]</span>) – The output format.</p></li>
+<li><p><strong>diagram_source</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – The diagram source string.</p></li>
+<li><p><strong>diagram_type</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'actdiag'</span></code>, <code class="docutils literal notranslate"><span class="pre">'blockdiag'</span></code>, <code class="docutils literal notranslate"><span class="pre">'bpmn'</span></code>, <code class="docutils literal notranslate"><span class="pre">'bytefield'</span></code>, <code class="docutils literal notranslate"><span class="pre">'c4plantuml'</span></code>, <code class="docutils literal notranslate"><span class="pre">'d2'</span></code>, <code class="docutils literal notranslate"><span class="pre">'dbml'</span></code>, <code class="docutils literal notranslate"><span class="pre">'ditaa'</span></code>, <code class="docutils literal notranslate"><span class="pre">'erd'</span></code>, <code class="docutils literal notranslate"><span class="pre">'excalidraw'</span></code>, <code class="docutils literal notranslate"><span class="pre">'graphviz'</span></code>, <code class="docutils literal notranslate"><span class="pre">'mermaid'</span></code>, <code class="docutils literal notranslate"><span class="pre">'nomnoml'</span></code>, <code class="docutils literal notranslate"><span class="pre">'nwdiag'</span></code>, <code class="docutils literal notranslate"><span class="pre">'packetdiag'</span></code>, <code class="docutils literal notranslate"><span class="pre">'pikchr'</span></code>, <code class="docutils literal notranslate"><span class="pre">'plantuml'</span></code>, <code class="docutils literal notranslate"><span class="pre">'rackdiag'</span></code>, <code class="docutils literal notranslate"><span class="pre">'seqdiag'</span></code>, <code class="docutils literal notranslate"><span class="pre">'structurizr'</span></code>, <code class="docutils literal notranslate"><span class="pre">'svgbob'</span></code>, <code class="docutils literal notranslate"><span class="pre">'symbolator'</span></code>, <code class="docutils literal notranslate"><span class="pre">'tikz'</span></code>, <code class="docutils literal notranslate"><span class="pre">'umlet'</span></code>, <code class="docutils literal notranslate"><span class="pre">'vega'</span></code>, <code class="docutils literal notranslate"><span class="pre">'vegalite'</span></code>, <code class="docutils literal notranslate"><span class="pre">'wavedrom'</span></code>, <code class="docutils literal notranslate"><span class="pre">'wireviz'</span></code>]</span>) – The diagram type.</p></li>
+<li><p><strong>output_format</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'base64'</span></code>, <code class="docutils literal notranslate"><span class="pre">'jpeg'</span></code>, <code class="docutils literal notranslate"><span class="pre">'pdf'</span></code>, <code class="docutils literal notranslate"><span class="pre">'png'</span></code>, <code class="docutils literal notranslate"><span class="pre">'svg'</span></code>, <code class="docutils literal notranslate"><span class="pre">'txt'</span></code>]</span>) – The output format.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -335,7 +363,7 @@
 <dd><p>Encode a diagram source string into a base64 string that can be used in a URL.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>diagram_source</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – The diagram source string.</p>
+<dd class="field-odd"><p><strong>diagram_source</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – The diagram source string.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The encoded string.</p>
@@ -343,6 +371,30 @@
 </dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">encode_src</span><span class="p">(</span><span class="s1">'Bob-&gt;Alice : Hello!'</span><span class="p">)</span>
 <span class="go">'eNpzyk_StXPMyUxOVbBS8EjNyclXBAA7UAXs'</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="kroki.svg_to_img_html">
+<span class="sig-prename descclassname"><span class="pre">kroki.</span></span><span class="sig-name descname"><span class="pre">svg_to_img_html</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">svg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kroki.html#svg_to_img_html"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kroki.svg_to_img_html" title="Link to this definition">¶</a></dt>
+<dd><p>An <code class="docutils literal notranslate"><span class="pre">&lt;img&gt;</span></code> showing <em>svg</em> as its own document.</p>
+<p>Inlined into a notebook, an SVG’s <code class="docutils literal notranslate"><span class="pre">&lt;style&gt;</span></code> block is page CSS: mermaid’s,
+for one, restyles the notebook’s own output text (thorwhalen/kroki#1). As an
+image the SVG is a separate document, so its styles (and any script) stay
+inside it.</p>
+<p>A root <code class="docutils literal notranslate"><span class="pre">width</span></code> that is relative (mermaid writes <code class="docutils literal notranslate"><span class="pre">100%</span></code>) gives the image no
+natural width, so the <code class="docutils literal notranslate"><span class="pre">viewBox</span></code> width becomes its <code class="docutils literal notranslate"><span class="pre">max-width</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">html</span> <span class="o">=</span> <span class="n">svg_to_img_html</span><span class="p">(</span><span class="s1">'&lt;svg viewBox="0 0 120 40" width="100%"&gt;&lt;style&gt;p</span><span class="si">{}</span><span class="s1">&lt;/style&gt;&lt;/svg&gt;'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">html</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'&lt;img src="data:image/svg+xml;base64,'</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s1">'max-width:120px'</span> <span class="ow">in</span> <span class="n">html</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -411,10 +463,13 @@
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">kroki</a><ul>
+<li><a class="reference internal" href="#kroki.IsolatedSVG"><code class="docutils literal notranslate"><span class="pre">IsolatedSVG</span></code></a></li>
 <li><a class="reference internal" href="#kroki.KrokiMagic"><code class="docutils literal notranslate"><span class="pre">KrokiMagic</span></code></a></li>
+<li><a class="reference internal" href="#kroki.bytes_to_image"><code class="docutils literal notranslate"><span class="pre">bytes_to_image()</span></code></a></li>
 <li><a class="reference internal" href="#kroki.decode_src"><code class="docutils literal notranslate"><span class="pre">decode_src()</span></code></a></li>
 <li><a class="reference internal" href="#kroki.diagram_image_bytes"><code class="docutils literal notranslate"><span class="pre">diagram_image_bytes()</span></code></a></li>
 <li><a class="reference internal" href="#kroki.encode_src"><code class="docutils literal notranslate"><span class="pre">encode_src()</span></code></a></li>
+<li><a class="reference internal" href="#kroki.svg_to_img_html"><code class="docutils literal notranslate"><span class="pre">svg_to_img_html()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -426,7 +481,7 @@
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=d0952cc8"></script>
+</div><script src="../_static/documentation_options.js?v=72e2dd8f"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

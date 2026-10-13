@@ -14,11 +14,13 @@
       encode_src
       is_svg
       load_ipython_extension
+      svg_to_img_html
    
    .. rubric:: Classes
 
    .. autosummary::
    
+      IsolatedSVG
       KrokiMagic
    
 .. rubric:: Modules

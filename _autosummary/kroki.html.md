@@ -4,22 +4,43 @@ Kroki from python
 
 ### Functions
 
-| `bytes_to_image`(b)                                                                         |                                                                                |
+| [`bytes_to_image`](#kroki.bytes_to_image)(b, \*[, isolate_svg])       | A displayable object for diagram bytes: an SVG for SVG bytes, else an Image.   |
 |---------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
 | [`decode_src`](#kroki.decode_src)(encoded_diagram_source)         | Decode a diagram source string from a base64 string.                           |
 | [`diagram_image_bytes`](#kroki.diagram_image_bytes)([diagram_source, ...]) | Get the bytes of a diagram image.                                              |
 | [`encode_src`](#kroki.encode_src)(diagram_source)                 | Encode a diagram source string into a base64 string that can be used in a URL. |
 | `is_svg`(b)                                                                                 |                                                                                |
 | `load_ipython_extension`(ipython)                                                           |                                                                                |
+| [`svg_to_img_html`](#kroki.svg_to_img_html)(svg)                       | An `<img>` showing *svg* as its own document.                                  |
 
 ### Classes
 
-| [`KrokiMagic`](#kroki.KrokiMagic)([shell])   |    |
-|------------------------------------------------------------------------|----|
+| [`IsolatedSVG`](#kroki.IsolatedSVG)([data, url, filename, metadata])   | An IPython `SVG` whose HTML representation cannot restyle the page.   |
+|-------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------|
+| [`KrokiMagic`](#kroki.KrokiMagic)([shell])                            |                                                                       |
+
+### *class* kroki.IsolatedSVG(data=None, url=None, filename=None, metadata=None)
+
+Bases: `SVG`
+
+An IPython `SVG` whose HTML representation cannot restyle the page.
+
+Jupyter frontends (JupyterLab, the classic notebook, VS Code) prefer
+`text/html` to `image/svg+xml`, so they show [`svg_to_img_html()`](#kroki.svg_to_img_html)’s
+image instead of inlining the SVG. The raw SVG stays available as `.data`
+and as the `image/svg+xml` representation, for exporters that want it.
 
 ### *class* kroki.KrokiMagic(shell=None, \*\*kwargs)
 
 Bases: `Magics`
+
+### kroki.bytes_to_image(b, , isolate_svg=True)
+
+A displayable object for diagram bytes: an SVG for SVG bytes, else an Image.
+
+With `isolate_svg` (the default) an SVG is an [`IsolatedSVG`](#kroki.IsolatedSVG), shown as
+an image so its CSS cannot leak into the notebook; `False` gives the plain
+inlined `IPython.display.SVG`.
 
 ### kroki.decode_src(encoded_diagram_source)
 
@@ -58,6 +79,29 @@ Encode a diagram source string into a base64 string that can be used in a URL.
 ```pycon
 >>> encode_src('Bob->Alice : Hello!')
 'eNpzyk_StXPMyUxOVbBS8EjNyclXBAA7UAXs'
+```
+
+### kroki.svg_to_img_html(svg)
+
+An `<img>` showing *svg* as its own document.
+
+Inlined into a notebook, an SVG’s `<style>` block is page CSS: mermaid’s,
+for one, restyles the notebook’s own output text (thorwhalen/kroki#1). As an
+image the SVG is a separate document, so its styles (and any script) stay
+inside it.
+
+A root `width` that is relative (mermaid writes `100%`) gives the image no
+natural width, so the `viewBox` width becomes its `max-width`.
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+```pycon
+>>> html = svg_to_img_html('<svg viewBox="0 0 120 40" width="100%"><style>p{}</style></svg>')
+>>> html.startswith('<img src="data:image/svg+xml;base64,')
+True
+>>> 'max-width:120px' in html
+True
 ```
 
 ### Modules

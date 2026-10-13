@@ -2,16 +2,18 @@
 
 # About this build
 
-This documentation was built on **2026-09-22 12:52 UTC** from commit <a href="https://github.com/thorwhalen/kroki/commit/fa5f6a913090363a2005dc8453274ca8c3c62e01"><code>fa5f6a9</code></a> on branch <code>main</code>, for **kroki 0.1.7** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-13 22:18 UTC** from commit <a href="https://github.com/thorwhalen/kroki/commit/87e92d30e16ce107751dad3722f62008f380bf32"><code>87e92d3</code></a> on branch <code>main</code>, for **kroki 0.1.8** (from <code>pyproject.toml</code>).
 
-#### NOTE
-Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
+#### WARNING
+The documentation and the package may be misaligned:
+
+- The documented version (0.1.8) is behind the latest release on PyPI (0.1.9): `pip install kroki` gives newer code than these docs describe.
 
 ## Source
 
 |                     |                                                                                                                                                         |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/kroki/commit/fa5f6a913090363a2005dc8453274ca8c3c62e01"><code>fa5f6a913090363a2005dc8453274ca8c3c62e01</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/kroki/commit/87e92d30e16ce107751dad3722f62008f380bf32"><code>87e92d30e16ce107751dad3722f62008f380bf32</code></a> |
 | Branch              | <code>main</code>                                                                                                                                       |
 | Tags at this commit | none                                                                                                                                                    |
 | Working tree        | clean                                                                                                                                                   |
@@ -22,18 +24,18 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/kroki</code>                                                              |
-| Run          | <a href="https://github.com/thorwhalen/kroki/actions/runs/35729710996">35729710996</a>     |
+| Run          | <a href="https://github.com/thorwhalen/kroki/actions/runs/38476722085">38476722085</a>     |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>fa5f6a913090363a2005dc8453274ca8c3c62e01</code> (in the history of the built commit) |
+| Event commit | <code>87e92d30e16ce107751dad3722f62008f380bf32</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.12  |
+| epythet  | 0.2.17  |
 | Sphinx   | 9.1.0   |
 | docutils | 0.22.4  |
-| Python   | 3.12.14 |
+| Python   | 3.12.15 |
 
 ## Configuration as resolved
 
@@ -49,14 +51,14 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/kroki/0.1.7/">0.1.7</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/kroki/0.1.9/">0.1.9</a>, newer than the documented version (0.1.8).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/kroki && cd kroki
-git checkout fa5f6a913090363a2005dc8453274ca8c3c62e01
-pip install "epythet==0.2.12"
+git checkout 87e92d30e16ce107751dad3722f62008f380bf32
+pip install "epythet==0.2.17"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 

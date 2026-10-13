@@ -1,4 +1,4 @@
-> built 2026-09-22 12:52 UTC from fa5f6a9 (main) · kroki 0.1.7. Details: build_info.json
+> built 2026-10-13 22:18 UTC from 87e92d3 (main) · kroki 0.1.8. Details: build_info.json
 
 # index.html.md
 
@@ -87,6 +87,8 @@ digraph D {
 
 ![image](https://user-images.githubusercontent.com/1906276/212101184-376b2565-c241-4bcb-81f9-50c1eb538675.png)
 
+SVG diagrams are shown as an image (`<img src="data:image/svg+xml;...">`) rather than inlined into the page. An inlined SVG’s `<style>` block is page CSS, and mermaid’s would otherwise restyle the notebook’s own output text, e.g. turning it dark gray in dark mode. The raw SVG is still there, as `.data` on the returned object; `kroki.bytes_to_image(svg_bytes, isolate_svg=False)` gives the old inlined display.
+
 To see what diagram types `kroki` supports through the `diagram_types` variable.
 
 ```python
@@ -158,22 +160,43 @@ Kroki from python
 
 ### Functions
 
-| `bytes_to_image`(b)                                                                         |                                                                                |
+| [`bytes_to_image`](_autosummary/kroki.html.md#kroki.bytes_to_image)(b, \*[, isolate_svg])       | A displayable object for diagram bytes: an SVG for SVG bytes, else an Image.   |
 |---------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
 | [`decode_src`](_autosummary/kroki.html.md#kroki.decode_src)(encoded_diagram_source)         | Decode a diagram source string from a base64 string.                           |
 | [`diagram_image_bytes`](_autosummary/kroki.html.md#kroki.diagram_image_bytes)([diagram_source, ...]) | Get the bytes of a diagram image.                                              |
 | [`encode_src`](_autosummary/kroki.html.md#kroki.encode_src)(diagram_source)                 | Encode a diagram source string into a base64 string that can be used in a URL. |
 | `is_svg`(b)                                                                                 |                                                                                |
 | `load_ipython_extension`(ipython)                                                           |                                                                                |
+| [`svg_to_img_html`](_autosummary/kroki.html.md#kroki.svg_to_img_html)(svg)                       | An `<img>` showing *svg* as its own document.                                  |
 
 ### Classes
 
-| [`KrokiMagic`](_autosummary/kroki.html.md#kroki.KrokiMagic)([shell])   |    |
-|------------------------------------------------------------------------|----|
+| [`IsolatedSVG`](_autosummary/kroki.html.md#kroki.IsolatedSVG)([data, url, filename, metadata])   | An IPython `SVG` whose HTML representation cannot restyle the page.   |
+|-------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------|
+| [`KrokiMagic`](_autosummary/kroki.html.md#kroki.KrokiMagic)([shell])                            |                                                                       |
+
+### *class* kroki.IsolatedSVG(data=None, url=None, filename=None, metadata=None)
+
+Bases: `SVG`
+
+An IPython `SVG` whose HTML representation cannot restyle the page.
+
+Jupyter frontends (JupyterLab, the classic notebook, VS Code) prefer
+`text/html` to `image/svg+xml`, so they show [`svg_to_img_html()`](_autosummary/kroki.html.md#kroki.svg_to_img_html)’s
+image instead of inlining the SVG. The raw SVG stays available as `.data`
+and as the `image/svg+xml` representation, for exporters that want it.
 
 ### *class* kroki.KrokiMagic(shell=None, \*\*kwargs)
 
 Bases: `Magics`
+
+### kroki.bytes_to_image(b, , isolate_svg=True)
+
+A displayable object for diagram bytes: an SVG for SVG bytes, else an Image.
+
+With `isolate_svg` (the default) an SVG is an [`IsolatedSVG`](_autosummary/kroki.html.md#kroki.IsolatedSVG), shown as
+an image so its CSS cannot leak into the notebook; `False` gives the plain
+inlined `IPython.display.SVG`.
 
 ### kroki.decode_src(encoded_diagram_source)
 
@@ -214,6 +237,29 @@ Encode a diagram source string into a base64 string that can be used in a URL.
 'eNpzyk_StXPMyUxOVbBS8EjNyclXBAA7UAXs'
 ```
 
+### kroki.svg_to_img_html(svg)
+
+An `<img>` showing *svg* as its own document.
+
+Inlined into a notebook, an SVG’s `<style>` block is page CSS: mermaid’s,
+for one, restyles the notebook’s own output text (thorwhalen/kroki#1). As an
+image the SVG is a separate document, so its styles (and any script) stay
+inside it.
+
+A root `width` that is relative (mermaid writes `100%`) gives the image no
+natural width, so the `viewBox` width becomes its `max-width`.
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+```pycon
+>>> html = svg_to_img_html('<svg viewBox="0 0 120 40" width="100%"><style>p{}</style></svg>')
+>>> html.startswith('<img src="data:image/svg+xml;base64,')
+True
+>>> 'max-width:120px' in html
+True
+```
+
 ### Modules
 
 | [`test`](_autosummary/kroki.test.html.md#module-kroki.test)   | Backwards compatible shim for the legacy `kroki.test` module.   |
@@ -250,16 +296,18 @@ pytest, so importing `kroki.test` still requires nothing beyond `kroki` itself.
 
 # About this build
 
-This documentation was built on **2026-09-22 12:52 UTC** from commit <a href="https://github.com/thorwhalen/kroki/commit/fa5f6a913090363a2005dc8453274ca8c3c62e01"><code>fa5f6a9</code></a> on branch <code>main</code>, for **kroki 0.1.7** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-13 22:18 UTC** from commit <a href="https://github.com/thorwhalen/kroki/commit/87e92d30e16ce107751dad3722f62008f380bf32"><code>87e92d3</code></a> on branch <code>main</code>, for **kroki 0.1.8** (from <code>pyproject.toml</code>).
 
-#### NOTE
-Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
+#### WARNING
+The documentation and the package may be misaligned:
+
+- The documented version (0.1.8) is behind the latest release on PyPI (0.1.9): `pip install kroki` gives newer code than these docs describe.
 
 ## Source
 
 |                     |                                                                                                                                                         |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/kroki/commit/fa5f6a913090363a2005dc8453274ca8c3c62e01"><code>fa5f6a913090363a2005dc8453274ca8c3c62e01</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/kroki/commit/87e92d30e16ce107751dad3722f62008f380bf32"><code>87e92d30e16ce107751dad3722f62008f380bf32</code></a> |
 | Branch              | <code>main</code>                                                                                                                                       |
 | Tags at this commit | none                                                                                                                                                    |
 | Working tree        | clean                                                                                                                                                   |
@@ -270,18 +318,18 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/kroki</code>                                                              |
-| Run          | <a href="https://github.com/thorwhalen/kroki/actions/runs/35729710996">35729710996</a>     |
+| Run          | <a href="https://github.com/thorwhalen/kroki/actions/runs/38476722085">38476722085</a>     |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>fa5f6a913090363a2005dc8453274ca8c3c62e01</code> (in the history of the built commit) |
+| Event commit | <code>87e92d30e16ce107751dad3722f62008f380bf32</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.12  |
+| epythet  | 0.2.17  |
 | Sphinx   | 9.1.0   |
 | docutils | 0.22.4  |
-| Python   | 3.12.14 |
+| Python   | 3.12.15 |
 
 ## Configuration as resolved
 
@@ -297,14 +345,14 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/kroki/0.1.7/">0.1.7</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/kroki/0.1.9/">0.1.9</a>, newer than the documented version (0.1.8).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/kroki && cd kroki
-git checkout fa5f6a913090363a2005dc8453274ca8c3c62e01
-pip install "epythet==0.2.12"
+git checkout 87e92d30e16ce107751dad3722f62008f380bf32
+pip install "epythet==0.2.17"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 
