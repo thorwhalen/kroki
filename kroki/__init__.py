@@ -135,9 +135,69 @@ def is_svg(b: bytes):
     return bool(svg_re.match(b))
 
 
-def bytes_to_image(b: bytes):
+_svg_root_re = re.compile(r"<svg\b[^>]*>", re.DOTALL)
+_attr_re = r'\b{}\s*=\s*["\']([^"\']*)["\']'
+
+
+def _root_attr(svg_tag: str, name: str):
+    m = re.search(_attr_re.format(re.escape(name)), svg_tag)
+    return m.group(1) if m else None
+
+
+def svg_to_img_html(svg) -> str:
+    """An ``<img>`` showing *svg* as its own document.
+
+    Inlined into a notebook, an SVG's ``<style>`` block is page CSS: mermaid's,
+    for one, restyles the notebook's own output text (thorwhalen/kroki#1). As an
+    image the SVG is a separate document, so its styles (and any script) stay
+    inside it.
+
+    A root ``width`` that is relative (mermaid writes ``100%``) gives the image no
+    natural width, so the ``viewBox`` width becomes its ``max-width``.
+
+    >>> html = svg_to_img_html('<svg viewBox="0 0 120 40" width="100%"><style>p{}</style></svg>')
+    >>> html.startswith('<img src="data:image/svg+xml;base64,')
+    True
+    >>> 'max-width:120px' in html
+    True
+    """
+    if isinstance(svg, bytes):
+        svg = svg.decode("utf-8")
+    style = ""
+    root = _svg_root_re.search(svg)
+    if root:
+        width = _root_attr(root.group(0), "width")
+        view_box = _root_attr(root.group(0), "viewBox")
+        if (width is None or width.strip().endswith("%")) and view_box:
+            parts = view_box.replace(",", " ").split()
+            if len(parts) == 4:
+                style = f' style="max-width:{parts[2]}px;width:100%"'
+    data = base64.b64encode(svg.encode("utf-8")).decode("ascii")
+    return f'<img src="data:image/svg+xml;base64,{data}"{style}/>'
+
+
+class IsolatedSVG(SVG):
+    """An IPython ``SVG`` whose HTML representation cannot restyle the page.
+
+    Jupyter frontends (JupyterLab, the classic notebook, VS Code) prefer
+    ``text/html`` to ``image/svg+xml``, so they show :func:`svg_to_img_html`'s
+    image instead of inlining the SVG. The raw SVG stays available as ``.data``
+    and as the ``image/svg+xml`` representation, for exporters that want it.
+    """
+
+    def _repr_html_(self):
+        return svg_to_img_html(self.data)
+
+
+def bytes_to_image(b: bytes, *, isolate_svg: bool = True):
+    """A displayable object for diagram bytes: an SVG for SVG bytes, else an Image.
+
+    With ``isolate_svg`` (the default) an SVG is an :class:`IsolatedSVG`, shown as
+    an image so its CSS cannot leak into the notebook; ``False`` gives the plain
+    inlined ``IPython.display.SVG``.
+    """
     if is_svg(b):
-        return SVG(b)
+        return IsolatedSVG(b) if isolate_svg else SVG(b)
     else:
         return Image(b)
 
