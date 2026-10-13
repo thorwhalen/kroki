@@ -190,3 +190,37 @@ def test_a_hyphenated_width_attribute_is_not_the_width():
 
 def test_undecodable_bytes_do_not_raise():
     assert kroki.svg_to_img_html(b"<svg>\xe9</svg>").startswith("<img ")
+
+
+# --- the %%kroki magic's display choice (#7) --------------------------------
+
+
+def _run_magic(monkeypatch, line):
+    monkeypatch.setattr(kroki, "diagram_image_bytes", lambda src, *args: LEAKY_SVG)
+    return kroki.KrokiMagic.kroki(None, line, "graph { a -- b }")
+
+
+def test_the_magic_isolates_svgs_by_default(monkeypatch):
+    assert type(_run_magic(monkeypatch, "graphviz")) is kroki.IsolatedSVG
+
+
+def test_the_magic_inlines_on_request(monkeypatch):
+    assert type(_run_magic(monkeypatch, "graphviz --inline")) is SVG
+
+
+def test_the_module_default_decides_and_isolate_overrides_it(monkeypatch):
+    monkeypatch.setattr(kroki, "ISOLATE_SVG", False)
+    assert type(_run_magic(monkeypatch, "graphviz")) is SVG
+    assert type(_run_magic(monkeypatch, "graphviz --isolate")) is kroki.IsolatedSVG
+    assert type(bytes_to_image(LEAKY_SVG)) is SVG
+
+
+def test_the_magic_passes_positional_args_and_refuses_unknown_options(monkeypatch):
+    seen = []
+    monkeypatch.setattr(
+        kroki, "diagram_image_bytes", lambda src, *args: seen.append(args) or LEAKY_SVG
+    )
+    kroki.KrokiMagic.kroki(None, "mermaid svg --inline", "graph TD; a-->b")
+    assert seen == [("mermaid", "svg")]
+    with pytest.raises(ValueError, match="--inlin"):
+        kroki.KrokiMagic.kroki(None, "mermaid --inlin", "graph TD; a-->b")
