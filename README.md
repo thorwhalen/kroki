@@ -92,6 +92,8 @@ digraph D {
 <img width="240" alt="image" src="https://user-images.githubusercontent.com/1906276/212101184-376b2565-c241-4bcb-81f9-50c1eb538675.png">
 
 
+SVG diagrams are shown as an image (`<img src="data:image/svg+xml;...">`) rather than inlined into the page. An inlined SVG's `<style>` block is page CSS, and mermaid's would otherwise restyle the notebook's own output text, e.g. turning it dark gray in dark mode. The raw SVG is still there, as `.data` on the returned object; `kroki.bytes_to_image(svg_bytes, isolate_svg=False)` gives the old inlined display.
+
 To see what diagram types `kroki` supports through the `diagram_types` variable.
 
 
