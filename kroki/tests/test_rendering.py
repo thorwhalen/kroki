@@ -224,3 +224,9 @@ def test_the_magic_passes_positional_args_and_refuses_unknown_options(monkeypatc
     assert seen == [("mermaid", "svg")]
     with pytest.raises(ValueError, match="--inlin"):
         kroki.KrokiMagic.kroki(None, "mermaid --inlin", "graph TD; a-->b")
+
+
+@pytest.mark.parametrize("line", ["graphviz --inline --isolate", "graphviz -inline"])
+def test_conflicting_or_single_dash_options_are_refused(monkeypatch, line):
+    with pytest.raises(ValueError):
+        _run_magic(monkeypatch, line)

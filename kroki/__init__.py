@@ -242,8 +242,10 @@ def _parse_magic_line(line: str) -> tuple[list[str], bool | None]:
     args, isolate = [], None
     for token in line.split():
         if token in _INLINE_FLAGS:
+            if isolate is not None and isolate != _INLINE_FLAGS[token]:
+                raise ValueError("%%kroki: --inline and --isolate are exclusive")
             isolate = _INLINE_FLAGS[token]
-        elif token.startswith("--"):
+        elif token.startswith("-"):
             raise ValueError(
                 f"Unknown %%kroki option {token!r}; known: {', '.join(_INLINE_FLAGS)}"
             )
