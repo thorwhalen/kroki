@@ -18,18 +18,24 @@ on regular expressions over the text, so a ``{`` or ``,`` inside a string, a com
 
 from __future__ import annotations
 
+import html
 import re
 import uuid
+from xml.sax.saxutils import escape as xml_escape
 
 __all__ = ["scope_css", "scope_svg", "new_scope_id"]
 
 #: At-rules whose block holds rules to scope in turn.
 _RULE_BLOCK_AT_RULES = frozenset(
-    {"media", "supports", "container", "layer", "scope", "document", "-moz-document"}
+    {
+        "media", "supports", "container", "layer", "scope", "document",
+        "-moz-document", "starting-style",
+    }
 )
 #: At-rules dropped from a scoped stylesheet: an ``@import`` pulls in a stylesheet
-#: whose rules would apply to the whole page, and cannot be scoped from here.
-_DROPPED_AT_RULES = frozenset({"import"})
+#: whose rules would apply to the whole page, and ``@page`` styles the printed page
+#: itself; neither can be scoped from here.
+_DROPPED_AT_RULES = frozenset({"import", "page"})
 #: A leading compound naming the document root rather than something inside it.
 _ROOT_SELECTORS = frozenset({":root", "html", "body", "svg"})
 
@@ -60,6 +66,13 @@ def _skip_string(css: str, i: int) -> int:
     return i
 
 
+_UNQUOTED_URL_RE = re.compile(r"url\(\s*(?![\s\"'])", re.IGNORECASE)
+
+
+def _is_name_char(c: str) -> bool:
+    return c.isalnum() or c in "-_" or ord(c) > 127
+
+
 def _skip_comment(css: str, i: int) -> int:
     end = css.find("*/", i + 2)
     return len(css) if end < 0 else end + 2
@@ -75,6 +88,12 @@ def _scan(css: str, i: int, stops: str) -> int:
         c = css[i]
         if c in "\"'":
             i = _skip_string(css, i)
+            continue
+        if _UNQUOTED_URL_RE.match(css, i) and (i == 0 or not _is_name_char(css[i - 1])):
+            # An unquoted url( is one token up to its ")", quotes and "/*" included,
+            # as a browser reads it: a stray quote must not swallow later rules.
+            close = css.find(")", i)
+            i = len(css) if close < 0 else close + 1
             continue
         if css.startswith("/*", i):
             i = _skip_comment(css, i)
@@ -201,10 +220,15 @@ def scope_css(css: str, scope_id: str, *, root_ids=()) -> str:
 
 # ------------------------------------------------------------------------------ svg
 
-_STYLE_RE = re.compile(r"(<style\b[^>]*>)(.*?)(</style\s*>)", re.DOTALL | re.IGNORECASE)
+# Tags are matched with quoted attribute values skipped, so a ">" inside one does
+# not end the tag; a self-closing <style/> is not an opener.
+_ATTRS = r"""(?:[^>"'/]|"[^"]*"|'[^']*'|/(?!>))*"""
+_STYLE_RE = re.compile(
+    rf"(<style\b{_ATTRS}>)(.*?)(</style\s*>)", re.DOTALL | re.IGNORECASE
+)
 _CDATA_RE = re.compile(r"^(\s*<!\[CDATA\[)(.*)(\]\]>\s*)$", re.DOTALL)
-_ROOT_RE = re.compile(r"<svg\b[^>]*>", re.DOTALL)
-_ID_ATTR_RE = re.compile(r"""(\s)id\s*=\s*(["'])(.*?)\2""", re.DOTALL)
+_ROOT_RE = re.compile(rf"<svg\b{_ATTRS}/?>", re.DOTALL)
+_ATTR_RE = re.compile(r"""(\s)([\w:.-]+)(\s*=\s*)(["'])(.*?)\4""", re.DOTALL)
 
 
 def scope_svg(svg: str, scope_id: str | None = None) -> str:
@@ -223,10 +247,10 @@ def scope_svg(svg: str, scope_id: str | None = None) -> str:
     if not root:
         return svg
     tag = root.group(0)
-    old = _ID_ATTR_RE.search(tag)
-    old_ids = (old.group(3),) if old else ()
+    old = next((a for a in _ATTR_RE.finditer(tag) if a.group(2) == "id"), None)
+    old_ids = (html.unescape(old.group(5)),) if old else ()
     if old:
-        new_tag = f"{tag[: old.start()]}{old.group(1)}id={old.group(2)}{scope_id}{old.group(2)}{tag[old.end() :]}"
+        new_tag = f"{tag[: old.start(5)]}{scope_id}{tag[old.end(5) :]}"
     else:
         new_tag = f'<svg id="{scope_id}"{tag[4:]}'
 
@@ -236,7 +260,11 @@ def scope_svg(svg: str, scope_id: str | None = None) -> str:
         if cdata:
             pre, body, post = cdata.groups()
             return f"{open_}{pre}{scope_css(body, scope_id, root_ids=old_ids)}{post}{close}"
-        return f"{open_}{scope_css(css, scope_id, root_ids=old_ids)}{close}"
+        # Outside CDATA the text is XML: "&gt;" and "&quot;" are what a browser
+        # reads as ">" and '"', so the CSS is scoped decoded and escaped back, or a
+        # quote the tokenizer cannot see would let a rule slip out unscoped.
+        scoped = scope_css(html.unescape(css), scope_id, root_ids=old_ids)
+        return f"{open_}{xml_escape(scoped)}{close}"
 
     rest = _STYLE_RE.sub(rewrite, svg[root.end() :])
     return f"{svg[: root.start()]}{new_tag}{rest}"

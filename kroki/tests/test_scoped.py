@@ -148,3 +148,57 @@ def test_no_rule_matches_anything_outside_the_scope(css):
         for el in page.xpath(translator.selector_to_xpath(selector))
     }
     assert matched & inside
+
+
+# --- found by the adversarial review of #10 ----------------------------------------
+
+
+def _outside_rules(scoped_svg: str, scope: str):
+    """Rules of *scoped_svg*'s stylesheets, decoded as a browser reads them, that are
+    not confined to ``#<scope>``."""
+    import html as html_lib
+    import re
+
+    pytest.importorskip("tinycss2")
+    css = "".join(
+        html_lib.unescape(m) for m in re.findall(r"<style[^>]*>(.*?)</style>", scoped_svg, re.S)
+    )
+    return [
+        p
+        for p in _qualified_preludes(css)
+        if not all(s.strip().startswith(f"#{scope}") for s in p.split(","))
+    ]
+
+
+def test_entity_escaped_css_is_scoped_as_the_browser_decodes_it():
+    """IPython re-serialises an SVG, turning '"' into '&quot;' in <style> text."""
+    obj = bytes_to_image(
+        b'<svg><style>p{content:"{"} q{color:red} svg>g{x:1}</style></svg>',
+        svg_display="scoped",
+    )
+    out = obj._repr_html_()
+    assert not _outside_rules(out, obj.scope_id), out
+    assert f"#{obj.scope_id}&gt;g{{x:1}}" in out  # `svg>g` is the root's child
+
+
+def test_a_self_closing_style_is_not_an_opener():
+    out = scope_svg('<svg><style/><g class="a">t</g><style>p{x:1}</style></svg>', "k")
+    assert '<style/><g class="a">t</g><style>#k p{x:1}</style>' in out
+
+
+@pytest.mark.parametrize("value", ['url(a"b)', "url(http://x/*)"])
+def test_an_unquoted_url_is_one_token(value):
+    assert scope_css(f"p{{background:{value}}} q{{y:2}}", "k") == (
+        f"#k p{{background:{value}}} #k q{{y:2}}"
+    )
+
+
+def test_page_global_at_rules_are_scoped_or_dropped():
+    out = scope_css("@page{margin:0} @starting-style{p{opacity:0}}", "k")
+    assert "@page" not in out
+    assert "@starting-style{#k p{opacity:0}}" in out
+
+
+def test_a_gt_inside_a_root_attribute_does_not_end_the_tag():
+    out = scope_svg('<svg aria-label="a > b" id="m"><style>#m .n{x:1}</style></svg>', "k")
+    assert out == '<svg aria-label="a > b" id="k"><style>#k .n{x:1}</style></svg>'
