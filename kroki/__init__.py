@@ -300,9 +300,7 @@ def _parse_magic_line(line: str) -> tuple[list[str], SvgDisplay | None]:
     for token in line.split():
         if token in _DISPLAY_FLAGS:
             if display is not None and display != _DISPLAY_FLAGS[token]:
-                raise ValueError(
-                    f"%%kroki: {', '.join(_DISPLAY_FLAGS)} are exclusive"
-                )
+                raise ValueError(f"%%kroki: {', '.join(_DISPLAY_FLAGS)} are exclusive")
             display = _DISPLAY_FLAGS[token]
         elif token.startswith("-"):
             raise ValueError(

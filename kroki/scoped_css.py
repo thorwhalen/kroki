@@ -28,8 +28,14 @@ __all__ = ["scope_css", "scope_svg", "new_scope_id"]
 #: At-rules whose block holds rules to scope in turn.
 _RULE_BLOCK_AT_RULES = frozenset(
     {
-        "media", "supports", "container", "layer", "scope", "document",
-        "-moz-document", "starting-style",
+        "media",
+        "supports",
+        "container",
+        "layer",
+        "scope",
+        "document",
+        "-moz-document",
+        "starting-style",
     }
 )
 #: At-rules dropped from a scoped stylesheet: an ``@import`` pulls in a stylesheet
@@ -38,6 +44,7 @@ _RULE_BLOCK_AT_RULES = frozenset(
 _DROPPED_AT_RULES = frozenset({"import", "page"})
 #: A leading compound naming the document root rather than something inside it.
 _ROOT_SELECTORS = frozenset({":root", "html", "body", "svg"})
+
 
 def new_scope_id(prefix: str = "kroki-scope") -> str:
     """A fresh, random element id.
@@ -137,10 +144,11 @@ def _scope_selector(selector: str, scope: str, old_ids: frozenset) -> str:
         if re.fullmatch(rf"#{re.escape(old)}(?![\w-])\S*", first):
             return f"{lead}#{scope}{first[len(old) + 1 :]}{rest}{trail}"
     if first.lower() in _ROOT_SELECTORS or first.lower().startswith(
-        tuple(f"{s}:" for s in _ROOT_SELECTORS) + tuple(f"{s}." for s in _ROOT_SELECTORS)
+        tuple(f"{s}:" for s in _ROOT_SELECTORS)
+        + tuple(f"{s}." for s in _ROOT_SELECTORS)
     ):
         name = next(s for s in _ROOT_SELECTORS if first.lower().startswith(s))
-        return f"{lead}#{scope}{first[len(name):]}{rest}{trail}"
+        return f"{lead}#{scope}{first[len(name) :]}{rest}{trail}"
     return f"{lead}#{scope} {body}{trail}"
 
 
@@ -213,7 +221,7 @@ def scope_css(css: str, scope_id: str, *, root_ids=()) -> str:
             out.append(css[i:])
             break
         close = _scan(css, j + 1, "}")
-        out.append(f"{_scope_prelude(css[i:j], scope_id, old_ids)}{css[j:close + 1]}")
+        out.append(f"{_scope_prelude(css[i:j], scope_id, old_ids)}{css[j : close + 1]}")
         i = close + 1
     return "".join(out)
 
