@@ -1,0 +1,14 @@
+kroki.scoped\_css
+=================
+
+.. automodule:: kroki.scoped_css
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      scope_css
+      scope_svg
+      new_scope_id
+   

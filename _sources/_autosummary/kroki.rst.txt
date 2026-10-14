@@ -21,6 +21,7 @@
       is_svg
       load_ipython_extension
       svg_to_img_html
+      svg_to_scoped_html
    
    .. rubric:: Classes
 
@@ -28,6 +29,7 @@
    
       IsolatedSVG
       KrokiMagic
+      ScopedSVG
    
 .. rubric:: Modules
 
@@ -35,4 +37,5 @@
    :toctree:
    :recursive:
 
+   scoped_css
    test

@@ -201,6 +201,7 @@
   <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../api.html">API reference</a><input aria-label="Toggle navigation of API reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../_autosummary/kroki.html">kroki</a><input aria-label="Toggle navigation of kroki" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../_autosummary/kroki.scoped_css.html">kroki.scoped_css</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../_autosummary/kroki.test.html">kroki.test</a></li>
 </ul>
 </li>
@@ -446,27 +447,90 @@
 
 
 
+<div class="viewcode-block" id="svg_to_scoped_html">
+<a class="viewcode-back" href="../_autosummary/kroki.html#kroki.svg_to_scoped_html">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">svg_to_scoped_html</span><span class="p">(</span><span class="n">svg</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">scope_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""*svg* inlined, with its CSS confined to it (see :mod:`kroki.scoped_css`).</span>
+
+<span class="sd">    The middle ground between :func:`svg_to_img_html` and a plain inline SVG (#8):</span>
+<span class="sd">    links, ``&lt;title&gt;`` tooltips, selectable text and web fonts work, as inlined,</span>
+<span class="sd">    while every rule of the SVG's ``&lt;style&gt;`` blocks is rewritten to match only</span>
+<span class="sd">    inside it, so it cannot restyle the notebook (#1).</span>
+
+<span class="sd">    &gt;&gt;&gt; html = svg_to_scoped_html('&lt;svg&gt;&lt;style&gt;p{margin:0}&lt;/style&gt;&lt;/svg&gt;', scope_id='k')</span>
+<span class="sd">    &gt;&gt;&gt; html</span>
+<span class="sd">    '&lt;svg id="k"&gt;&lt;style&gt;#k p{margin:0}&lt;/style&gt;&lt;/svg&gt;'</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">kroki.scoped_css</span><span class="w"> </span><span class="kn">import</span> <span class="n">scope_svg</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">svg</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="n">svg</span> <span class="o">=</span> <span class="n">svg</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"replace"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">scope_svg</span><span class="p">(</span><span class="n">svg</span><span class="p">,</span> <span class="n">scope_id</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="ScopedSVG">
+<a class="viewcode-back" href="../_autosummary/kroki.html#kroki.ScopedSVG">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ScopedSVG</span><span class="p">(</span><span class="n">SVG</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""An IPython ``SVG`` shown inline, with its CSS scoped to itself (#8).</span>
+
+<span class="sd">    Both its HTML and its SVG representations are the scoped SVG, under one id</span>
+<span class="sd">    fixed for the object, so a frontend that inlines either cannot be restyled.</span>
+<span class="sd">    """</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">scope_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">kroki.scoped_css</span><span class="w"> </span><span class="kn">import</span> <span class="n">new_scope_id</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"_scope_id"</span><span class="p">,</span> <span class="n">new_scope_id</span><span class="p">())</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">svg_to_scoped_html</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">scope_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scope_id</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_repr_svg_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_repr_html_</span><span class="p">()</span></div>
+
+
+
 <span class="c1">#: Whether SVGs are shown isolated (as an image) when a caller does not say. Set it</span>
 <span class="c1">#: to ``False`` to inline every SVG of a notebook (``kroki.ISOLATE_SVG = False``),</span>
 <span class="c1">#: trading the protection of thorwhalen/kroki#1 for interactivity (#7).</span>
 <span class="n">ISOLATE_SVG</span> <span class="o">=</span> <span class="kc">True</span>
 
+<span class="n">SvgDisplay</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"isolate"</span><span class="p">,</span> <span class="s2">"inline"</span><span class="p">,</span> <span class="s2">"scoped"</span><span class="p">]</span>
+<span class="n">_SVG_DISPLAYS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"isolate"</span><span class="p">:</span> <span class="n">IsolatedSVG</span><span class="p">,</span> <span class="s2">"inline"</span><span class="p">:</span> <span class="n">SVG</span><span class="p">,</span> <span class="s2">"scoped"</span><span class="p">:</span> <span class="n">ScopedSVG</span><span class="p">}</span>
+
 
 <div class="viewcode-block" id="bytes_to_image">
 <a class="viewcode-back" href="../_autosummary/kroki.html#kroki.bytes_to_image">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">bytes_to_image</span><span class="p">(</span><span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">isolate_svg</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">bytes_to_image</span><span class="p">(</span>
+    <span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">isolate_svg</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">svg_display</span><span class="p">:</span> <span class="n">SvgDisplay</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">):</span>
 <span class="w">    </span><span class="sd">"""A displayable object for diagram bytes: an SVG for SVG bytes, else an Image.</span>
 
-<span class="sd">    Isolated, an SVG is an :class:`IsolatedSVG`, shown as an image so its CSS cannot</span>
-<span class="sd">    leak into the notebook. Inlined (``isolate_svg=False``), it is the plain</span>
-<span class="sd">    ``IPython.display.SVG``: its CSS reaches the page, but its links, ``&lt;title&gt;``</span>
-<span class="sd">    tooltips, selectable text and external fonts work. ``None`` (the default)</span>
-<span class="sd">    follows :data:`ISOLATE_SVG`.</span>
+<span class="sd">    *svg_display* picks how an SVG is shown:</span>
+
+<span class="sd">    - ``"isolate"``: an :class:`IsolatedSVG`, shown as an image so its CSS cannot</span>
+<span class="sd">      leak into the notebook, but without links, tooltips or text selection;</span>
+<span class="sd">    - ``"inline"``: the plain ``IPython.display.SVG``, whose links, ``&lt;title&gt;``</span>
+<span class="sd">      tooltips, selectable text and external fonts work, but whose CSS reaches the</span>
+<span class="sd">      page;</span>
+<span class="sd">    - ``"scoped"``: a :class:`ScopedSVG`, inlined with its CSS rewritten to apply</span>
+<span class="sd">      only inside it, so it keeps the interactivity and does not leak (#8).</span>
+
+<span class="sd">    Without *svg_display*, *isolate_svg* chooses between ``"isolate"`` and</span>
+<span class="sd">    ``"inline"``, and ``None`` for both follows :data:`ISOLATE_SVG`.</span>
 <span class="sd">    """</span>
-    <span class="k">if</span> <span class="n">isolate_svg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">isolate_svg</span> <span class="o">=</span> <span class="n">ISOLATE_SVG</span>
+    <span class="k">if</span> <span class="n">svg_display</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">isolate_svg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">isolate_svg</span> <span class="o">=</span> <span class="n">ISOLATE_SVG</span>
+        <span class="n">svg_display</span> <span class="o">=</span> <span class="s2">"isolate"</span> <span class="k">if</span> <span class="n">isolate_svg</span> <span class="k">else</span> <span class="s2">"inline"</span>
+    <span class="k">if</span> <span class="n">svg_display</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_SVG_DISPLAYS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"svg_display must be one of </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">_SVG_DISPLAYS</span><span class="p">)</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">svg_display</span><span class="si">!r}</span><span class="s2">"</span>
+        <span class="p">)</span>
     <span class="k">if</span> <span class="n">is_svg</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">IsolatedSVG</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="k">if</span> <span class="n">isolate_svg</span> <span class="k">else</span> <span class="n">SVG</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_SVG_DISPLAYS</span><span class="p">[</span><span class="n">svg_display</span><span class="p">](</span><span class="n">b</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">Image</span><span class="p">(</span><span class="n">b</span><span class="p">)</span></div>
 
@@ -487,48 +551,50 @@
 <span class="c1"># see https://kroki.io/examples.html#wbs for working examples</span>
 
 
-<span class="n">_INLINE_FLAGS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"--inline"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"--isolate"</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+<span class="n">_DISPLAY_FLAGS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"--inline"</span><span class="p">:</span> <span class="s2">"inline"</span><span class="p">,</span> <span class="s2">"--isolate"</span><span class="p">:</span> <span class="s2">"isolate"</span><span class="p">,</span> <span class="s2">"--scoped"</span><span class="p">:</span> <span class="s2">"scoped"</span><span class="p">}</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_parse_magic_line</span><span class="p">(</span><span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""Split a ``%%kroki`` line into positional args and the SVG isolation choice.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_magic_line</span><span class="p">(</span><span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">SvgDisplay</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Split a ``%%kroki`` line into positional args and the SVG display choice.</span>
 
 <span class="sd">    &gt;&gt;&gt; _parse_magic_line("graphviz --inline")</span>
-<span class="sd">    (['graphviz'], False)</span>
+<span class="sd">    (['graphviz'], 'inline')</span>
 <span class="sd">    &gt;&gt;&gt; _parse_magic_line("mermaid svg")</span>
 <span class="sd">    (['mermaid', 'svg'], None)</span>
 <span class="sd">    """</span>
-    <span class="n">args</span><span class="p">,</span> <span class="n">isolate</span> <span class="o">=</span> <span class="p">[],</span> <span class="kc">None</span>
+    <span class="n">args</span><span class="p">,</span> <span class="n">display</span> <span class="o">=</span> <span class="p">[],</span> <span class="kc">None</span>
     <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">_INLINE_FLAGS</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">isolate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">isolate</span> <span class="o">!=</span> <span class="n">_INLINE_FLAGS</span><span class="p">[</span><span class="n">token</span><span class="p">]:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"</span><span class="si">%%</span><span class="s2">kroki: --inline and --isolate are exclusive"</span><span class="p">)</span>
-            <span class="n">isolate</span> <span class="o">=</span> <span class="n">_INLINE_FLAGS</span><span class="p">[</span><span class="n">token</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">_DISPLAY_FLAGS</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">display</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">display</span> <span class="o">!=</span> <span class="n">_DISPLAY_FLAGS</span><span class="p">[</span><span class="n">token</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"%%kroki: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_DISPLAY_FLAGS</span><span class="p">)</span><span class="si">}</span><span class="s2"> are exclusive"</span>
+                <span class="p">)</span>
+            <span class="n">display</span> <span class="o">=</span> <span class="n">_DISPLAY_FLAGS</span><span class="p">[</span><span class="n">token</span><span class="p">]</span>
         <span class="k">elif</span> <span class="n">token</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"-"</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">"Unknown %%kroki option </span><span class="si">{</span><span class="n">token</span><span class="si">!r}</span><span class="s2">; known: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_INLINE_FLAGS</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+                <span class="sa">f</span><span class="s2">"Unknown %%kroki option </span><span class="si">{</span><span class="n">token</span><span class="si">!r}</span><span class="s2">; known: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_DISPLAY_FLAGS</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">args</span><span class="p">,</span> <span class="n">isolate</span>
+    <span class="k">return</span> <span class="n">args</span><span class="p">,</span> <span class="n">display</span>
 
 
 <div class="viewcode-block" id="KrokiMagic">
 <a class="viewcode-back" href="../_autosummary/kroki.html#kroki.KrokiMagic">[docs]</a>
 <span class="nd">@magics_class</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">KrokiMagic</span><span class="p">(</span><span class="n">Magics</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""``%%kroki [diagram_type] [output_format] [--inline | --isolate]``.</span>
+<span class="w">    </span><span class="sd">"""``%%kroki [diagram_type] [output_format] [--inline | --isolate | --scoped]``.</span>
 
 <span class="sd">    ``--inline`` shows an SVG inlined, so its links, tooltips, selectable text and</span>
 <span class="sd">    web fonts work, at the cost of letting its CSS restyle the notebook (#7);</span>
-<span class="sd">    ``--isolate`` forces the safe image display. Without either, :data:`ISOLATE_SVG`</span>
-<span class="sd">    decides.</span>
+<span class="sd">    ``--isolate`` forces the safe image display; ``--scoped`` inlines it with its</span>
+<span class="sd">    CSS confined to it, keeping both (#8). Without any, :data:`ISOLATE_SVG` decides.</span>
 <span class="sd">    """</span>
 
     <span class="nd">@cell_magic</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">kroki</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">cell</span><span class="p">):</span>
-        <span class="n">args</span><span class="p">,</span> <span class="n">isolate</span> <span class="o">=</span> <span class="n">_parse_magic_line</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">bytes_to_image</span><span class="p">(</span><span class="n">diagram_image_bytes</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">),</span> <span class="n">isolate_svg</span><span class="o">=</span><span class="n">isolate</span><span class="p">)</span></div>
+        <span class="n">args</span><span class="p">,</span> <span class="n">display</span> <span class="o">=</span> <span class="n">_parse_magic_line</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bytes_to_image</span><span class="p">(</span><span class="n">diagram_image_bytes</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">),</span> <span class="n">svg_display</span><span class="o">=</span><span class="n">display</span><span class="p">)</span></div>
 
 
 
@@ -578,7 +644,7 @@
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=dba2a9e9"></script>
+</div><script src="../_static/documentation_options.js?v=3a6d79cd"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

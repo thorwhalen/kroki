@@ -204,6 +204,7 @@
   <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API reference</a><input aria-label="Toggle navigation of API reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="_autosummary/kroki.html">kroki</a><input aria-label="Toggle navigation of kroki" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/kroki.scoped_css.html">kroki.scoped_css</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/kroki.test.html">kroki.test</a></li>
 </ul>
 </li>
@@ -316,6 +317,7 @@ Don’t miss the nice <a class="reference external" href="https://kroki.io/asset
 </a>
 <p>SVG diagrams are shown as an image (<code class="docutils literal notranslate"><span class="pre">&lt;img</span> <span class="pre">src=&quot;data:image/svg+xml;...&quot;&gt;</span></code>) rather than inlined into the page. An inlined SVG’s <code class="docutils literal notranslate"><span class="pre">&lt;style&gt;</span></code> block is page CSS, and mermaid’s would otherwise restyle the notebook’s own output text, e.g. turning it dark gray in dark mode. The raw SVG is still there, as <code class="docutils literal notranslate"><span class="pre">.data</span></code> on the returned object; <code class="docutils literal notranslate"><span class="pre">kroki.bytes_to_image(svg_bytes,</span> <span class="pre">isolate_svg=False)</span></code> gives the old inlined display.</p>
 <p>The image costs the SVG’s interactivity: no links, no <code class="docutils literal notranslate"><span class="pre">&lt;title&gt;</span></code> tooltips, no text selection, and no web fonts. When you need those and trust the diagram’s CSS, inline it: <code class="docutils literal notranslate"><span class="pre">%%kroki</span> <span class="pre">graphviz</span> <span class="pre">--inline</span></code> for one cell, or <code class="docutils literal notranslate"><span class="pre">kroki.ISOLATE_SVG</span> <span class="pre">=</span> <span class="pre">False</span></code> for every diagram in the notebook (then <code class="docutils literal notranslate"><span class="pre">--isolate</span></code> forces the image again). From Python, <code class="docutils literal notranslate"><span class="pre">kroki.bytes_to_image(svg_bytes,</span> <span class="pre">isolate_svg=False)</span></code> does the same.</p>
+<p>A third mode keeps the interactivity without the leak: <code class="docutils literal notranslate"><span class="pre">%%kroki</span> <span class="pre">mermaid</span> <span class="pre">--scoped</span></code> (or <code class="docutils literal notranslate"><span class="pre">bytes_to_image(svg_bytes,</span> <span class="pre">svg_display=&quot;scoped&quot;)</span></code>) inlines the SVG, but rewrites every rule of its <code class="docutils literal notranslate"><span class="pre">&lt;style&gt;</span></code> blocks to apply only inside the diagram. It gives the SVG root a random id and prefixes each selector with it. A leading <code class="docutils literal notranslate"><span class="pre">:root</span></code>, <code class="docutils literal notranslate"><span class="pre">html</span></code>, <code class="docutils literal notranslate"><span class="pre">body</span></code> or <code class="docutils literal notranslate"><span class="pre">svg</span></code>, and mermaid’s own <code class="docutils literal notranslate"><span class="pre">#mermaid-N</span></code> selectors, become that root. <code class="docutils literal notranslate"><span class="pre">&#64;media</span></code> and <code class="docutils literal notranslate"><span class="pre">&#64;supports</span></code> blocks are scoped inside, and <code class="docutils literal notranslate"><span class="pre">&#64;font-face</span></code> and <code class="docutils literal notranslate"><span class="pre">&#64;keyframes</span></code> are kept as they are. <code class="docutils literal notranslate"><span class="pre">&#64;import</span></code> and <code class="docutils literal notranslate"><span class="pre">&#64;page</span></code> are dropped, because neither can be scoped. The rewrite works on CSS tokens (<code class="docutils literal notranslate"><span class="pre">kroki.scoped_css</span></code>), not on regular expressions.</p>
 <p>To see what diagram types <code class="docutils literal notranslate"><span class="pre">kroki</span></code> supports through the <code class="docutils literal notranslate"><span class="pre">diagram_types</span></code> variable.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">kroki</span><span class="w"> </span><span class="kn">import</span> <span class="n">diagram_types</span>
 
@@ -368,7 +370,7 @@ We also made some ready-to-use <code class="docutils literal notranslate"><span 
 </div>
 </section>
 
-<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-10-13 23:07 UTC from <a href="https://github.com/thorwhalen/kroki/commit/33be446709ca25a6ac1a0ec5eb3b271438acfb9f">33be446</a> (main) · kroki 0.1.9 · <a href="about-this-build.html">about this build</a></p>
+<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-10-14 01:29 UTC from <a href="https://github.com/thorwhalen/kroki/commit/8015f7e7fa0a76f4078a519cbea2d98f17f4263a">8015f7e</a> (main) · kroki 0.1.10 · <a href="about-this-build.html">about this build</a></p>
         </article>
       </div>
       <footer>
@@ -404,7 +406,7 @@ We also made some ready-to-use <code class="docutils literal notranslate"><span 
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=dba2a9e9"></script>
+</div><script src="_static/documentation_options.js?v=3a6d79cd"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

@@ -7,7 +7,7 @@
 <link rel="alternate" type="text/markdown" href="kroki.html.md">
 <link rel="describedby" href="../llms.txt" type="text/markdown">
 <link rel="alternate" type="text/markdown" href="kroki.html.md">
-<link rel="describedby" href="llms.txt"><link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="kroki.test" href="kroki.test.html"><link rel="prev" title="API reference" href="../api.html">
+<link rel="describedby" href="llms.txt"><link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="kroki.scoped_css" href="kroki.scoped_css.html"><link rel="prev" title="API reference" href="../api.html">
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>kroki - kroki</title>
@@ -204,6 +204,7 @@
   <ul class="current">
 <li class="toctree-l1 current has-children"><a class="reference internal" href="../api.html">API reference</a><input aria-label="Toggle navigation of API reference" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
 <li class="toctree-l2 current has-children current-page"><a class="current reference internal" href="#">kroki</a><input aria-label="Toggle navigation of kroki" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="kroki.scoped_css.html">kroki.scoped_css</a></li>
 <li class="toctree-l3"><a class="reference internal" href="kroki.test.html">kroki.test</a></li>
 </ul>
 </li>
@@ -264,7 +265,7 @@
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#kroki.bytes_to_image" title="kroki.bytes_to_image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bytes_to_image</span></code></a>(b, *[, isolate_svg])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kroki.bytes_to_image" title="kroki.bytes_to_image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bytes_to_image</span></code></a>(b, *[, isolate_svg, svg_display])</p></td>
 <td><p>A displayable object for diagram bytes: an SVG for SVG bytes, else an Image.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#kroki.decode_src" title="kroki.decode_src"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decode_src</span></code></a>(encoded_diagram_source)</p></td>
@@ -285,6 +286,9 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#kroki.svg_to_img_html" title="kroki.svg_to_img_html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">svg_to_img_html</span></code></a>(svg)</p></td>
 <td><p>An <code class="docutils literal notranslate"><span class="pre">&lt;img&gt;</span></code> showing <em>svg</em> as its own document.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kroki.svg_to_scoped_html" title="kroki.svg_to_scoped_html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">svg_to_scoped_html</span></code></a>(svg, *[, scope_id])</p></td>
+<td><p><em>svg</em> inlined, with its CSS confined to it (see <a class="reference internal" href="kroki.scoped_css.html#module-kroki.scoped_css" title="kroki.scoped_css"><code class="xref py py-mod docutils literal notranslate"><span class="pre">kroki.scoped_css</span></code></a>).</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -296,7 +300,10 @@
 <td><p>An IPython <code class="docutils literal notranslate"><span class="pre">SVG</span></code> whose HTML representation cannot restyle the page.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#kroki.KrokiMagic" title="kroki.KrokiMagic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KrokiMagic</span></code></a>([shell])</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">%%kroki</span> <span class="pre">[diagram_type]</span> <span class="pre">[output_format]</span> <span class="pre">[--inline</span> <span class="pre">|</span> <span class="pre">--isolate]</span></code>.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">%%kroki</span> <span class="pre">[diagram_type]</span> <span class="pre">[output_format]</span> <span class="pre">[--inline</span> <span class="pre">|</span> <span class="pre">--isolate</span> <span class="pre">|</span> <span class="pre">--scoped]</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kroki.ScopedSVG" title="kroki.ScopedSVG"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ScopedSVG</span></code></a>([data, url, filename, metadata])</p></td>
+<td><p>An IPython <code class="docutils literal notranslate"><span class="pre">SVG</span></code> shown inline, with its CSS scoped to itself (#8).</p></td>
 </tr>
 </tbody>
 </table>
@@ -324,24 +331,40 @@ and as the <code class="docutils literal notranslate"><span class="pre">image/sv
 <dt class="sig sig-object py" id="kroki.KrokiMagic">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">kroki.</span></span><span class="sig-name descname"><span class="pre">KrokiMagic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kroki.html#KrokiMagic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kroki.KrokiMagic" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Magics</span></code></p>
-<p><code class="docutils literal notranslate"><span class="pre">%%kroki</span> <span class="pre">[diagram_type]</span> <span class="pre">[output_format]</span> <span class="pre">[--inline</span> <span class="pre">|</span> <span class="pre">--isolate]</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">%%kroki</span> <span class="pre">[diagram_type]</span> <span class="pre">[output_format]</span> <span class="pre">[--inline</span> <span class="pre">|</span> <span class="pre">--isolate</span> <span class="pre">|</span> <span class="pre">--scoped]</span></code>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">--inline</span></code> shows an SVG inlined, so its links, tooltips, selectable text and
 web fonts work, at the cost of letting its CSS restyle the notebook (#7);
-<code class="docutils literal notranslate"><span class="pre">--isolate</span></code> forces the safe image display. Without either, <a class="reference internal" href="#kroki.ISOLATE_SVG" title="kroki.ISOLATE_SVG"><code class="xref py py-data docutils literal notranslate"><span class="pre">ISOLATE_SVG</span></code></a>
-decides.</p>
+<code class="docutils literal notranslate"><span class="pre">--isolate</span></code> forces the safe image display; <code class="docutils literal notranslate"><span class="pre">--scoped</span></code> inlines it with its
+CSS confined to it, keeping both (#8). Without any, <a class="reference internal" href="#kroki.ISOLATE_SVG" title="kroki.ISOLATE_SVG"><code class="xref py py-data docutils literal notranslate"><span class="pre">ISOLATE_SVG</span></code></a> decides.</p>
 <dl class="field-list simple">
 </dl>
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="kroki.ScopedSVG">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">kroki.</span></span><span class="sig-name descname"><span class="pre">ScopedSVG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kroki.html#ScopedSVG"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kroki.ScopedSVG" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">SVG</span></code></p>
+<p>An IPython <code class="docutils literal notranslate"><span class="pre">SVG</span></code> shown inline, with its CSS scoped to itself (#8).</p>
+<p>Both its HTML and its SVG representations are the scoped SVG, under one id
+fixed for the object, so a frontend that inlines either cannot be restyled.</p>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="kroki.bytes_to_image">
-<span class="sig-prename descclassname"><span class="pre">kroki.</span></span><span class="sig-name descname"><span class="pre">bytes_to_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">isolate_svg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kroki.html#bytes_to_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kroki.bytes_to_image" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">kroki.</span></span><span class="sig-name descname"><span class="pre">bytes_to_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">isolate_svg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">svg_display</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kroki.html#bytes_to_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kroki.bytes_to_image" title="Link to this definition">¶</a></dt>
 <dd><p>A displayable object for diagram bytes: an SVG for SVG bytes, else an Image.</p>
-<p>Isolated, an SVG is an <a class="reference internal" href="#kroki.IsolatedSVG" title="kroki.IsolatedSVG"><code class="xref py py-class docutils literal notranslate"><span class="pre">IsolatedSVG</span></code></a>, shown as an image so its CSS cannot
-leak into the notebook. Inlined (<code class="docutils literal notranslate"><span class="pre">isolate_svg=False</span></code>), it is the plain
-<code class="docutils literal notranslate"><span class="pre">IPython.display.SVG</span></code>: its CSS reaches the page, but its links, <code class="docutils literal notranslate"><span class="pre">&lt;title&gt;</span></code>
-tooltips, selectable text and external fonts work. <code class="docutils literal notranslate"><span class="pre">None</span></code> (the default)
-follows <a class="reference internal" href="#kroki.ISOLATE_SVG" title="kroki.ISOLATE_SVG"><code class="xref py py-data docutils literal notranslate"><span class="pre">ISOLATE_SVG</span></code></a>.</p>
+<p><em>svg_display</em> picks how an SVG is shown:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;isolate&quot;</span></code>: an <a class="reference internal" href="#kroki.IsolatedSVG" title="kroki.IsolatedSVG"><code class="xref py py-class docutils literal notranslate"><span class="pre">IsolatedSVG</span></code></a>, shown as an image so its CSS cannot
+leak into the notebook, but without links, tooltips or text selection;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;inline&quot;</span></code>: the plain <code class="docutils literal notranslate"><span class="pre">IPython.display.SVG</span></code>, whose links, <code class="docutils literal notranslate"><span class="pre">&lt;title&gt;</span></code>
+tooltips, selectable text and external fonts work, but whose CSS reaches the
+page;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;scoped&quot;</span></code>: a <a class="reference internal" href="#kroki.ScopedSVG" title="kroki.ScopedSVG"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScopedSVG</span></code></a>, inlined with its CSS rewritten to apply
+only inside it, so it keeps the interactivity and does not leak (#8).</p></li>
+</ul>
+<p>Without <em>svg_display</em>, <em>isolate_svg</em> chooses between <code class="docutils literal notranslate"><span class="pre">&quot;isolate&quot;</span></code> and
+<code class="docutils literal notranslate"><span class="pre">&quot;inline&quot;</span></code>, and <code class="docutils literal notranslate"><span class="pre">None</span></code> for both follows <a class="reference internal" href="#kroki.ISOLATE_SVG" title="kroki.ISOLATE_SVG"><code class="xref py py-data docutils literal notranslate"><span class="pre">ISOLATE_SVG</span></code></a>.</p>
 <dl class="field-list simple">
 </dl>
 </dd></dl>
@@ -424,11 +447,34 @@ natural width, so the <code class="docutils literal notranslate"><span class="pr
 </div>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="kroki.svg_to_scoped_html">
+<span class="sig-prename descclassname"><span class="pre">kroki.</span></span><span class="sig-name descname"><span class="pre">svg_to_scoped_html</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">svg</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">scope_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kroki.html#svg_to_scoped_html"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kroki.svg_to_scoped_html" title="Link to this definition">¶</a></dt>
+<dd><p><em>svg</em> inlined, with its CSS confined to it (see <a class="reference internal" href="kroki.scoped_css.html#module-kroki.scoped_css" title="kroki.scoped_css"><code class="xref py py-mod docutils literal notranslate"><span class="pre">kroki.scoped_css</span></code></a>).</p>
+<p>The middle ground between <a class="reference internal" href="#kroki.svg_to_img_html" title="kroki.svg_to_img_html"><code class="xref py py-func docutils literal notranslate"><span class="pre">svg_to_img_html()</span></code></a> and a plain inline SVG (#8):
+links, <code class="docutils literal notranslate"><span class="pre">&lt;title&gt;</span></code> tooltips, selectable text and web fonts work, as inlined,
+while every rule of the SVG’s <code class="docutils literal notranslate"><span class="pre">&lt;style&gt;</span></code> blocks is rewritten to match only
+inside it, so it cannot restyle the notebook (#1).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">html</span> <span class="o">=</span> <span class="n">svg_to_scoped_html</span><span class="p">(</span><span class="s1">'&lt;svg&gt;&lt;style&gt;p</span><span class="si">{margin:0}</span><span class="s1">&lt;/style&gt;&lt;/svg&gt;'</span><span class="p">,</span> <span class="n">scope_id</span><span class="o">=</span><span class="s1">'k'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">html</span>
+<span class="go">'&lt;svg id="k"&gt;&lt;style&gt;#k p{margin:0}&lt;/style&gt;&lt;/svg&gt;'</span>
+</pre></div>
+</div>
+</dd></dl>
+
 <p class="rubric">Modules</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="kroki.test.html#module-kroki.test" title="kroki.test"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="kroki.scoped_css.html#module-kroki.scoped_css" title="kroki.scoped_css"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scoped_css</span></code></a></p></td>
+<td><p>Scope a stylesheet to one element, so an inlined SVG's CSS cannot restyle the page.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="kroki.test.html#module-kroki.test" title="kroki.test"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test</span></code></a></p></td>
 <td><p>Backwards compatible shim for the legacy <code class="docutils literal notranslate"><span class="pre">kroki.test</span></code> module.</p></td>
 </tr>
 </tbody>
@@ -441,12 +487,12 @@ natural width, so the <code class="docutils literal notranslate"><span class="pr
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="kroki.test.html">
+          <a class="next-page" href="kroki.scoped_css.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">kroki.test</div>
+                <div class="title">kroki.scoped_css</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -491,11 +537,13 @@ natural width, so the <code class="docutils literal notranslate"><span class="pr
 <li><a class="reference internal" href="#kroki.ISOLATE_SVG"><code class="docutils literal notranslate"><span class="pre">ISOLATE_SVG</span></code></a></li>
 <li><a class="reference internal" href="#kroki.IsolatedSVG"><code class="docutils literal notranslate"><span class="pre">IsolatedSVG</span></code></a></li>
 <li><a class="reference internal" href="#kroki.KrokiMagic"><code class="docutils literal notranslate"><span class="pre">KrokiMagic</span></code></a></li>
+<li><a class="reference internal" href="#kroki.ScopedSVG"><code class="docutils literal notranslate"><span class="pre">ScopedSVG</span></code></a></li>
 <li><a class="reference internal" href="#kroki.bytes_to_image"><code class="docutils literal notranslate"><span class="pre">bytes_to_image()</span></code></a></li>
 <li><a class="reference internal" href="#kroki.decode_src"><code class="docutils literal notranslate"><span class="pre">decode_src()</span></code></a></li>
 <li><a class="reference internal" href="#kroki.diagram_image_bytes"><code class="docutils literal notranslate"><span class="pre">diagram_image_bytes()</span></code></a></li>
 <li><a class="reference internal" href="#kroki.encode_src"><code class="docutils literal notranslate"><span class="pre">encode_src()</span></code></a></li>
 <li><a class="reference internal" href="#kroki.svg_to_img_html"><code class="docutils literal notranslate"><span class="pre">svg_to_img_html()</span></code></a></li>
+<li><a class="reference internal" href="#kroki.svg_to_scoped_html"><code class="docutils literal notranslate"><span class="pre">svg_to_scoped_html()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -507,7 +555,7 @@ natural width, so the <code class="docutils literal notranslate"><span class="pr
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=dba2a9e9"></script>
+</div><script src="../_static/documentation_options.js?v=3a6d79cd"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

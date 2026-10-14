@@ -9,20 +9,22 @@ Kroki from python
 
 ### Functions
 
-| [`bytes_to_image`](#kroki.bytes_to_image)(b, \*[, isolate_svg])       | A displayable object for diagram bytes: an SVG for SVG bytes, else an Image.   |
-|---------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
-| [`decode_src`](#kroki.decode_src)(encoded_diagram_source)         | Decode a diagram source string from a base64 string.                           |
-| [`diagram_image_bytes`](#kroki.diagram_image_bytes)([diagram_source, ...]) | Get the bytes of a diagram image.                                              |
-| [`encode_src`](#kroki.encode_src)(diagram_source)                 | Encode a diagram source string into a base64 string that can be used in a URL. |
-| `is_svg`(b)                                                                                 |                                                                                |
-| `load_ipython_extension`(ipython)                                                           |                                                                                |
-| [`svg_to_img_html`](#kroki.svg_to_img_html)(svg)                       | An `<img>` showing *svg* as its own document.                                  |
+| [`bytes_to_image`](#kroki.bytes_to_image)(b, \*[, isolate_svg, svg_display])   | A displayable object for diagram bytes: an SVG for SVG bytes, else an Image.                                                                |
+|------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| [`decode_src`](#kroki.decode_src)(encoded_diagram_source)                  | Decode a diagram source string from a base64 string.                                                                                        |
+| [`diagram_image_bytes`](#kroki.diagram_image_bytes)([diagram_source, ...])          | Get the bytes of a diagram image.                                                                                                           |
+| [`encode_src`](#kroki.encode_src)(diagram_source)                          | Encode a diagram source string into a base64 string that can be used in a URL.                                                              |
+| `is_svg`(b)                                                                                          |                                                                                                                                             |
+| `load_ipython_extension`(ipython)                                                                    |                                                                                                                                             |
+| [`svg_to_img_html`](#kroki.svg_to_img_html)(svg)                                | An `<img>` showing *svg* as its own document.                                                                                               |
+| [`svg_to_scoped_html`](#kroki.svg_to_scoped_html)(svg, \*[, scope_id])             | *svg* inlined, with its CSS confined to it (see [`kroki.scoped_css`](kroki.scoped_css.html.md#module-kroki.scoped_css)). |
 
 ### Classes
 
-| [`IsolatedSVG`](#kroki.IsolatedSVG)([data, url, filename, metadata])   | An IPython `SVG` whose HTML representation cannot restyle the page.   |
-|-------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------|
-| [`KrokiMagic`](#kroki.KrokiMagic)([shell])                            | `%%kroki [diagram_type] [output_format] [--inline | --isolate]`.      |
+| [`IsolatedSVG`](#kroki.IsolatedSVG)([data, url, filename, metadata])   | An IPython `SVG` whose HTML representation cannot restyle the page.         |
+|-------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
+| [`KrokiMagic`](#kroki.KrokiMagic)([shell])                            | `%%kroki [diagram_type] [output_format] [--inline | --isolate | --scoped]`. |
+| [`ScopedSVG`](#kroki.ScopedSVG)([data, url, filename, metadata])     | An IPython `SVG` shown inline, with its CSS scoped to itself (#8).          |
 
 ### kroki.ISOLATE_SVG *= True*
 
@@ -45,22 +47,38 @@ and as the `image/svg+xml` representation, for exporters that want it.
 
 Bases: `Magics`
 
-`%%kroki [diagram_type] [output_format] [--inline | --isolate]`.
+`%%kroki [diagram_type] [output_format] [--inline | --isolate | --scoped]`.
 
 `--inline` shows an SVG inlined, so its links, tooltips, selectable text and
 web fonts work, at the cost of letting its CSS restyle the notebook (#7);
-`--isolate` forces the safe image display. Without either, [`ISOLATE_SVG`](#kroki.ISOLATE_SVG)
-decides.
+`--isolate` forces the safe image display; `--scoped` inlines it with its
+CSS confined to it, keeping both (#8). Without any, [`ISOLATE_SVG`](#kroki.ISOLATE_SVG) decides.
 
-### kroki.bytes_to_image(b, , isolate_svg=None)
+### *class* kroki.ScopedSVG(data=None, url=None, filename=None, metadata=None)
+
+Bases: `SVG`
+
+An IPython `SVG` shown inline, with its CSS scoped to itself (#8).
+
+Both its HTML and its SVG representations are the scoped SVG, under one id
+fixed for the object, so a frontend that inlines either cannot be restyled.
+
+### kroki.bytes_to_image(b, , isolate_svg=None, svg_display=None)
 
 A displayable object for diagram bytes: an SVG for SVG bytes, else an Image.
 
-Isolated, an SVG is an [`IsolatedSVG`](#kroki.IsolatedSVG), shown as an image so its CSS cannot
-leak into the notebook. Inlined (`isolate_svg=False`), it is the plain
-`IPython.display.SVG`: its CSS reaches the page, but its links, `<title>`
-tooltips, selectable text and external fonts work. `None` (the default)
-follows [`ISOLATE_SVG`](#kroki.ISOLATE_SVG).
+*svg_display* picks how an SVG is shown:
+
+- `"isolate"`: an [`IsolatedSVG`](#kroki.IsolatedSVG), shown as an image so its CSS cannot
+  leak into the notebook, but without links, tooltips or text selection;
+- `"inline"`: the plain `IPython.display.SVG`, whose links, `<title>`
+  tooltips, selectable text and external fonts work, but whose CSS reaches the
+  page;
+- `"scoped"`: a [`ScopedSVG`](#kroki.ScopedSVG), inlined with its CSS rewritten to apply
+  only inside it, so it keeps the interactivity and does not leak (#8).
+
+Without *svg_display*, *isolate_svg* chooses between `"isolate"` and
+`"inline"`, and `None` for both follows [`ISOLATE_SVG`](#kroki.ISOLATE_SVG).
 
 ### kroki.decode_src(encoded_diagram_source)
 
@@ -124,7 +142,26 @@ True
 True
 ```
 
+### kroki.svg_to_scoped_html(svg, , scope_id=None)
+
+*svg* inlined, with its CSS confined to it (see [`kroki.scoped_css`](kroki.scoped_css.html.md#module-kroki.scoped_css)).
+
+The middle ground between [`svg_to_img_html()`](#kroki.svg_to_img_html) and a plain inline SVG (#8):
+links, `<title>` tooltips, selectable text and web fonts work, as inlined,
+while every rule of the SVG’s `<style>` blocks is rewritten to match only
+inside it, so it cannot restyle the notebook (#1).
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+```pycon
+>>> html = svg_to_scoped_html('<svg><style>p{margin:0}</style></svg>', scope_id='k')
+>>> html
+'<svg id="k"><style>#k p{margin:0}</style></svg>'
+```
+
 ### Modules
 
-| [`test`](kroki.test.html.md#module-kroki.test)   | Backwards compatible shim for the legacy `kroki.test` module.   |
-|---------------------------------------------------------------------------|-----------------------------------------------------------------|
+| [`scoped_css`](kroki.scoped_css.html.md#module-kroki.scoped_css)   | Scope a stylesheet to one element, so an inlined SVG's CSS cannot restyle the page.   |
+|---------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
+| [`test`](kroki.test.html.md#module-kroki.test)               | Backwards compatible shim for the legacy `kroki.test` module.                         |
