@@ -50,6 +50,12 @@ dev = [
     "pytest-cov>=4.0",
     "ruff>=0.1.0",
 ]
+# Independent CSS parsing and matching, for the scoped-SVG tests (#8).
+test = [
+    "tinycss2",
+    "cssselect",
+    "lxml",
+]
 docs = [
     "sphinx>=6.0",
     "sphinx-rtd-theme>=1.0",
@@ -105,6 +111,9 @@ doctest_optionflags = [
 
 [tool.wads.ci]
 project_name = "kroki"
+
+[tool.wads.ci.install]
+extras = ["test"]
 
 [tool.wads.ci.commands]
 pre_test = []

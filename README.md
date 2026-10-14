@@ -96,6 +96,8 @@ SVG diagrams are shown as an image (`<img src="data:image/svg+xml;...">`) rather
 
 The image costs the SVG's interactivity: no links, no `<title>` tooltips, no text selection, and no web fonts. When you need those and trust the diagram's CSS, inline it: `%%kroki graphviz --inline` for one cell, or `kroki.ISOLATE_SVG = False` for every diagram in the notebook (then `--isolate` forces the image again). From Python, `kroki.bytes_to_image(svg_bytes, isolate_svg=False)` does the same.
 
+A third mode keeps the interactivity without the leak: `%%kroki mermaid --scoped` (or `bytes_to_image(svg_bytes, svg_display="scoped")`) inlines the SVG, but rewrites every rule of its `<style>` blocks to apply only inside the diagram. It gives the SVG root a random id and prefixes each selector with it. A leading `:root`, `html`, `body` or `svg`, and mermaid's own `#mermaid-N` selectors, become that root. `@media` and `@supports` blocks are scoped inside, and `@font-face` and `@keyframes` are kept as they are. `@import` and `@page` are dropped, because neither can be scoped. The rewrite works on CSS tokens (`kroki.scoped_css`), not on regular expressions.
+
 To see what diagram types `kroki` supports through the `diagram_types` variable.
 
 
