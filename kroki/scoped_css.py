@@ -156,7 +156,8 @@ def _replace_root_ids(body: str, scope: str, old_ids: frozenset) -> tuple[str, b
                     if o
                     and body.startswith(o, i + 1)
                     and not (
-                        len(body) > i + 1 + len(o) and _is_name_char(body[i + 1 + len(o)])
+                        len(body) > i + 1 + len(o)
+                        and _is_name_char(body[i + 1 + len(o)])
                     )
                 ),
                 None,
