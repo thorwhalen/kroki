@@ -9,10 +9,11 @@
 <link rel="alternate" type="text/markdown" href="kroki.scoped_css.html.md">
 <link rel="describedby" href="llms.txt"><link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="kroki.test" href="kroki.test.html"><link rel="prev" title="kroki" href="kroki.html">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.1 and Furo 2025.12.19 -->
         <title>kroki.scoped_css - kroki</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -306,17 +307,17 @@ scope element itself, and so does a leading <code class="docutils literal notran
 <code class="docutils literal notranslate"><span class="pre">&#64;supports</span></code> and similar blocks are scoped inside; <code class="docutils literal notranslate"><span class="pre">&#64;font-face</span></code>,
 <code class="docutils literal notranslate"><span class="pre">&#64;keyframes</span></code> and other descriptor blocks are kept as they are; <code class="docutils literal notranslate"><span class="pre">&#64;import</span></code> is
 dropped, since what it imports could not be scoped.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
-</dd>
-</dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">scope_css</span><span class="p">(</span><span class="s1">'#mermaid-1 .node, svg{fill:red}'</span><span class="p">,</span> <span class="s1">'k'</span><span class="p">,</span> <span class="n">root_ids</span><span class="o">=</span><span class="p">[</span><span class="s1">'mermaid-1'</span><span class="p">])</span>
 <span class="go">'#k .node, #k{fill:red}'</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">scope_css</span><span class="p">(</span><span class="s1">'@import url(x.css); a[title="a,b{"]</span><span class="si">{x:1}</span><span class="s1">'</span><span class="p">,</span> <span class="s1">'k'</span><span class="p">)</span>
 <span class="go">' #k a[title="a,b{"]{x:1}'</span>
 </pre></div>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -326,16 +327,16 @@ dropped, since what it imports could not be scoped.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">&lt;style&gt;</span></code> elements are found as markup (the CSS inside them is rewritten by
 <a class="reference internal" href="#kroki.scoped_css.scope_css" title="kroki.scoped_css.scope_css"><code class="xref py py-func docutils literal notranslate"><span class="pre">scope_css()</span></code></a>), with a <code class="docutils literal notranslate"><span class="pre">CDATA</span></code> wrapper kept as it was. The root’s previous
 id, if any, is what its own selectors are rewritten from.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
-</dd>
-</dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">scope_svg</span><span class="p">(</span><span class="s1">'&lt;svg id="m1"&gt;&lt;style&gt;#m1 p</span><span class="si">{x:1}</span><span class="s1"> q</span><span class="si">{y:2}</span><span class="s1">&lt;/style&gt;&lt;/svg&gt;'</span><span class="p">,</span> <span class="s1">'k'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span>
 <span class="go">'&lt;svg id="k"&gt;&lt;style&gt;#k p{x:1} #k q{y:2}&lt;/style&gt;&lt;/svg&gt;'</span>
 </pre></div>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -406,7 +407,7 @@ id, if any, is what its own selectors are rewritten from.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=3a6d79cd"></script>
+</div><script src="../_static/documentation_options.js?v=932d0dab"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

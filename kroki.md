@@ -1,4 +1,4 @@
-> built 2026-10-14 01:29 UTC from 8015f7e (main) · kroki 0.1.10. Details: build_info.json
+> built 2026-10-20 11:37 UTC from f0fcd61 (main) · kroki 0.1.11. Details: build_info.json
 
 # index.html.md
 
@@ -291,9 +291,6 @@ inside it.
 A root `width` that is relative (mermaid writes `100%`) gives the image no
 natural width, so the `viewBox` width becomes its `max-width`.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ```pycon
 >>> html = svg_to_img_html('<svg viewBox="0 0 120 40" width="100%"><style>p{}</style></svg>')
 >>> html.startswith('<img src="data:image/svg+xml;base64,')
@@ -301,6 +298,9 @@ True
 >>> 'max-width:120px' in html
 True
 ```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### kroki.svg_to_scoped_html(svg, , scope_id=None)
 
@@ -311,14 +311,14 @@ links, `<title>` tooltips, selectable text and web fonts work, as inlined,
 while every rule of the SVG’s `<style>` blocks is rewritten to match only
 inside it, so it cannot restyle the notebook (#1).
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ```pycon
 >>> html = svg_to_scoped_html('<svg><style>p{margin:0}</style></svg>', scope_id='k')
 >>> html
 '<svg id="k"><style>#k p{margin:0}</style></svg>'
 ```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### Modules
 
@@ -380,15 +380,15 @@ scope element itself, and so does a leading `#<id>` for an id in *root_ids*
 `@keyframes` and other descriptor blocks are kept as they are; `@import` is
 dropped, since what it imports could not be scoped.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ```pycon
 >>> scope_css('#mermaid-1 .node, svg{fill:red}', 'k', root_ids=['mermaid-1'])
 '#k .node, #k{fill:red}'
 >>> scope_css('@import url(x.css); a[title="a,b{"]{x:1}', 'k')
 ' #k a[title="a,b{"]{x:1}'
 ```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### kroki.scoped_css.scope_svg(svg, scope_id=None)
 
@@ -398,14 +398,14 @@ The `<style>` elements are found as markup (the CSS inside them is rewritten by
 [`scope_css()`](_autosummary/kroki.scoped_css.html.md#kroki.scoped_css.scope_css)), with a `CDATA` wrapper kept as it was. The root’s previous
 id, if any, is what its own selectors are rewritten from.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ```pycon
 >>> s = scope_svg('<svg id="m1"><style>#m1 p{x:1} q{y:2}</style></svg>', 'k')
 >>> s
 '<svg id="k"><style>#k p{x:1} #k q{y:2}</style></svg>'
 ```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 
 # _autosummary/kroki.test.html.md
@@ -438,16 +438,18 @@ pytest, so importing `kroki.test` still requires nothing beyond `kroki` itself.
 
 # About this build
 
-This documentation was built on **2026-10-14 01:29 UTC** from commit <a href="https://github.com/thorwhalen/kroki/commit/8015f7e7fa0a76f4078a519cbea2d98f17f4263a"><code>8015f7e</code></a> on branch <code>main</code>, for **kroki 0.1.10** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-20 11:37 UTC** from commit <a href="https://github.com/thorwhalen/kroki/commit/f0fcd61924486ac4fcedb4041945aff48f826337"><code>f0fcd61</code></a> on branch <code>main</code>, for **kroki 0.1.11** (from <code>pyproject.toml</code>).
 
-#### NOTE
-Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
+#### WARNING
+The documentation and the package may be misaligned:
+
+- The documented version (0.1.11) is behind the latest release on PyPI (0.1.12): `pip install kroki` gives newer code than these docs describe.
 
 ## Source
 
 |                     |                                                                                                                                                         |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/kroki/commit/8015f7e7fa0a76f4078a519cbea2d98f17f4263a"><code>8015f7e7fa0a76f4078a519cbea2d98f17f4263a</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/kroki/commit/f0fcd61924486ac4fcedb4041945aff48f826337"><code>f0fcd61924486ac4fcedb4041945aff48f826337</code></a> |
 | Branch              | <code>main</code>                                                                                                                                       |
 | Tags at this commit | none                                                                                                                                                    |
 | Working tree        | clean                                                                                                                                                   |
@@ -458,16 +460,16 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/kroki</code>                                                              |
-| Run          | <a href="https://github.com/thorwhalen/kroki/actions/runs/38495852939">38495852939</a>     |
+| Run          | <a href="https://github.com/thorwhalen/kroki/actions/runs/39416061720">39416061720</a>     |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>8015f7e7fa0a76f4078a519cbea2d98f17f4263a</code> (in the history of the built commit) |
+| Event commit | <code>f0fcd61924486ac4fcedb4041945aff48f826337</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.17  |
-| Sphinx   | 9.1.0   |
+| epythet  | 0.2.19  |
+| Sphinx   | 9.1.1   |
 | docutils | 0.22.4  |
 | Python   | 3.12.15 |
 
@@ -485,14 +487,14 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/kroki/0.1.10/">0.1.10</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/kroki/0.1.12/">0.1.12</a>, newer than the documented version (0.1.11).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/kroki && cd kroki
-git checkout 8015f7e7fa0a76f4078a519cbea2d98f17f4263a
-pip install "epythet==0.2.17"
+git checkout f0fcd61924486ac4fcedb4041945aff48f826337
+pip install "epythet==0.2.19"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 

@@ -131,9 +131,6 @@ inside it.
 A root `width` that is relative (mermaid writes `100%`) gives the image no
 natural width, so the `viewBox` width becomes its `max-width`.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ```pycon
 >>> html = svg_to_img_html('<svg viewBox="0 0 120 40" width="100%"><style>p{}</style></svg>')
 >>> html.startswith('<img src="data:image/svg+xml;base64,')
@@ -141,6 +138,9 @@ True
 >>> 'max-width:120px' in html
 True
 ```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### kroki.svg_to_scoped_html(svg, , scope_id=None)
 
@@ -151,14 +151,14 @@ links, `<title>` tooltips, selectable text and web fonts work, as inlined,
 while every rule of the SVG’s `<style>` blocks is rewritten to match only
 inside it, so it cannot restyle the notebook (#1).
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ```pycon
 >>> html = svg_to_scoped_html('<svg><style>p{margin:0}</style></svg>', scope_id='k')
 >>> html
 '<svg id="k"><style>#k p{margin:0}</style></svg>'
 ```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### Modules
 

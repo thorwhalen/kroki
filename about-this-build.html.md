@@ -2,16 +2,18 @@
 
 # About this build
 
-This documentation was built on **2026-10-14 01:29 UTC** from commit <a href="https://github.com/thorwhalen/kroki/commit/8015f7e7fa0a76f4078a519cbea2d98f17f4263a"><code>8015f7e</code></a> on branch <code>main</code>, for **kroki 0.1.10** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-20 11:37 UTC** from commit <a href="https://github.com/thorwhalen/kroki/commit/f0fcd61924486ac4fcedb4041945aff48f826337"><code>f0fcd61</code></a> on branch <code>main</code>, for **kroki 0.1.11** (from <code>pyproject.toml</code>).
 
-#### NOTE
-Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
+#### WARNING
+The documentation and the package may be misaligned:
+
+- The documented version (0.1.11) is behind the latest release on PyPI (0.1.12): `pip install kroki` gives newer code than these docs describe.
 
 ## Source
 
 |                     |                                                                                                                                                         |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/kroki/commit/8015f7e7fa0a76f4078a519cbea2d98f17f4263a"><code>8015f7e7fa0a76f4078a519cbea2d98f17f4263a</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/kroki/commit/f0fcd61924486ac4fcedb4041945aff48f826337"><code>f0fcd61924486ac4fcedb4041945aff48f826337</code></a> |
 | Branch              | <code>main</code>                                                                                                                                       |
 | Tags at this commit | none                                                                                                                                                    |
 | Working tree        | clean                                                                                                                                                   |
@@ -22,16 +24,16 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/kroki</code>                                                              |
-| Run          | <a href="https://github.com/thorwhalen/kroki/actions/runs/38495852939">38495852939</a>     |
+| Run          | <a href="https://github.com/thorwhalen/kroki/actions/runs/39416061720">39416061720</a>     |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>8015f7e7fa0a76f4078a519cbea2d98f17f4263a</code> (in the history of the built commit) |
+| Event commit | <code>f0fcd61924486ac4fcedb4041945aff48f826337</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.17  |
-| Sphinx   | 9.1.0   |
+| epythet  | 0.2.19  |
+| Sphinx   | 9.1.1   |
 | docutils | 0.22.4  |
 | Python   | 3.12.15 |
 
@@ -49,14 +51,14 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/kroki/0.1.10/">0.1.10</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/kroki/0.1.12/">0.1.12</a>, newer than the documented version (0.1.11).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/kroki && cd kroki
-git checkout 8015f7e7fa0a76f4078a519cbea2d98f17f4263a
-pip install "epythet==0.2.17"
+git checkout f0fcd61924486ac4fcedb4041945aff48f826337
+pip install "epythet==0.2.19"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 

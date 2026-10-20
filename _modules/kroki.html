@@ -6,10 +6,11 @@
 <link rel="alternate" type="text/markdown" href="kroki.html.md">
 <link rel="describedby" href="../llms.txt" type="text/markdown"><link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.1 and Furo 2025.12.19 -->
         <title>kroki - kroki</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -521,6 +522,12 @@
 <span class="sd">    Without *svg_display*, *isolate_svg* chooses between ``"isolate"`` and</span>
 <span class="sd">    ``"inline"``, and ``None`` for both follows :data:`ISOLATE_SVG`.</span>
 <span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">svg_display</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">isolate_svg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">isolate_svg</span> <span class="o">!=</span> <span class="p">(</span><span class="n">svg_display</span> <span class="o">==</span> <span class="s2">"isolate"</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"isolate_svg=</span><span class="si">{</span><span class="n">isolate_svg</span><span class="si">}</span><span class="s2"> contradicts svg_display=</span><span class="si">{</span><span class="n">svg_display</span><span class="si">!r}</span><span class="s2">; "</span>
+                <span class="s2">"pass only svg_display"</span>
+            <span class="p">)</span>
     <span class="k">if</span> <span class="n">svg_display</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">isolate_svg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">isolate_svg</span> <span class="o">=</span> <span class="n">ISOLATE_SVG</span>
@@ -566,9 +573,7 @@
     <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">_DISPLAY_FLAGS</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">display</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">display</span> <span class="o">!=</span> <span class="n">_DISPLAY_FLAGS</span><span class="p">[</span><span class="n">token</span><span class="p">]:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">"%%kroki: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_DISPLAY_FLAGS</span><span class="p">)</span><span class="si">}</span><span class="s2"> are exclusive"</span>
-                <span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"%%kroki: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_DISPLAY_FLAGS</span><span class="p">)</span><span class="si">}</span><span class="s2"> are exclusive"</span><span class="p">)</span>
             <span class="n">display</span> <span class="o">=</span> <span class="n">_DISPLAY_FLAGS</span><span class="p">[</span><span class="n">token</span><span class="p">]</span>
         <span class="k">elif</span> <span class="n">token</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"-"</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -644,7 +649,7 @@
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=3a6d79cd"></script>
+</div><script src="../_static/documentation_options.js?v=932d0dab"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

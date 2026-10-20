@@ -6,10 +6,11 @@
 <link rel="alternate" type="text/markdown" href="scoped_css.html.md">
 <link rel="describedby" href="../../llms.txt" type="text/markdown"><link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.1 and Furo 2025.12.19 -->
         <title>kroki.scoped_css - kroki</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -270,8 +271,14 @@
 <span class="c1">#: At-rules whose block holds rules to scope in turn.</span>
 <span class="n">_RULE_BLOCK_AT_RULES</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span>
     <span class="p">{</span>
-        <span class="s2">"media"</span><span class="p">,</span> <span class="s2">"supports"</span><span class="p">,</span> <span class="s2">"container"</span><span class="p">,</span> <span class="s2">"layer"</span><span class="p">,</span> <span class="s2">"scope"</span><span class="p">,</span> <span class="s2">"document"</span><span class="p">,</span>
-        <span class="s2">"-moz-document"</span><span class="p">,</span> <span class="s2">"starting-style"</span><span class="p">,</span>
+        <span class="s2">"media"</span><span class="p">,</span>
+        <span class="s2">"supports"</span><span class="p">,</span>
+        <span class="s2">"container"</span><span class="p">,</span>
+        <span class="s2">"layer"</span><span class="p">,</span>
+        <span class="s2">"scope"</span><span class="p">,</span>
+        <span class="s2">"document"</span><span class="p">,</span>
+        <span class="s2">"-moz-document"</span><span class="p">,</span>
+        <span class="s2">"starting-style"</span><span class="p">,</span>
     <span class="p">}</span>
 <span class="p">)</span>
 <span class="c1">#: At-rules dropped from a scoped stylesheet: an ``@import`` pulls in a stylesheet</span>
@@ -280,6 +287,7 @@
 <span class="n">_DROPPED_AT_RULES</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">"import"</span><span class="p">,</span> <span class="s2">"page"</span><span class="p">})</span>
 <span class="c1">#: A leading compound naming the document root rather than something inside it.</span>
 <span class="n">_ROOT_SELECTORS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">":root"</span><span class="p">,</span> <span class="s2">"html"</span><span class="p">,</span> <span class="s2">"body"</span><span class="p">,</span> <span class="s2">"svg"</span><span class="p">})</span>
+
 
 <div class="viewcode-block" id="new_scope_id">
 <a class="viewcode-back" href="../../_autosummary/kroki.scoped_css.html#kroki.scoped_css.new_scope_id">[docs]</a>
@@ -369,23 +377,77 @@
 <span class="c1"># ------------------------------------------------------------------------ selectors</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_replace_root_ids</span><span class="p">(</span><span class="n">body</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">scope</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">old_ids</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""*body* with each ``#&lt;old root id&gt;`` replaced by ``#&lt;scope&gt;``, and whether any was.</span>
+
+<span class="sd">    Strings, comments and attribute selectors are skipped, so a ``#id`` inside them</span>
+<span class="sd">    is left alone.</span>
+<span class="sd">    """</span>
+    <span class="n">out</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">found</span> <span class="o">=</span> <span class="p">[],</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">False</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">body</span><span class="p">):</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">body</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="s2">"</span><span class="se">\"</span><span class="s2">'"</span><span class="p">:</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">_skip_string</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">body</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"/*"</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">_skip_comment</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s2">"["</span><span class="p">:</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">_scan</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"]"</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s2">"</span><span class="se">\\</span><span class="s2">"</span><span class="p">:</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span>
+        <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s2">"#"</span><span class="p">:</span>
+            <span class="n">hit</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="n">o</span>
+                    <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">old_ids</span>
+                    <span class="k">if</span> <span class="n">o</span>
+                    <span class="ow">and</span> <span class="n">body</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span>
+                        <span class="nb">len</span><span class="p">(</span><span class="n">body</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">o</span><span class="p">)</span> <span class="ow">and</span> <span class="n">_is_name_char</span><span class="p">(</span><span class="n">body</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">o</span><span class="p">)])</span>
+                    <span class="p">)</span>
+                <span class="p">),</span>
+                <span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">hit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"#</span><span class="si">{</span><span class="n">scope</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">hit</span><span class="p">)</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">continue</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">body</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">j</span><span class="p">])</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">j</span>
+    <span class="k">return</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">),</span> <span class="n">found</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_scope_selector</span><span class="p">(</span><span class="n">selector</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">scope</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">old_ids</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="n">lead</span> <span class="o">=</span> <span class="n">selector</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">selector</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">selector</span><span class="o">.</span><span class="n">lstrip</span><span class="p">())]</span>
     <span class="n">trail</span> <span class="o">=</span> <span class="n">selector</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">selector</span><span class="o">.</span><span class="n">rstrip</span><span class="p">())</span> <span class="p">:]</span>
     <span class="n">body</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="c1"># Comments at the head are set aside, or they would hide the root selector.</span>
+    <span class="k">while</span> <span class="n">body</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"/*"</span><span class="p">):</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="n">_skip_comment</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">rest</span> <span class="o">=</span> <span class="n">body</span><span class="p">[</span><span class="n">j</span><span class="p">:]</span>
+        <span class="n">lead</span> <span class="o">+=</span> <span class="n">body</span><span class="p">[:</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">rest</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">rest</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">rest</span><span class="o">.</span><span class="n">lstrip</span><span class="p">())]</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="n">rest</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">body</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">selector</span>
+    <span class="c1"># mermaid writes `#mermaid-1 .node`, possibly after other compounds</span>
+    <span class="c1"># (`.dark #mermaid-1 .node`): that id is the root's, so it becomes the scope.</span>
+    <span class="n">replaced</span><span class="p">,</span> <span class="n">found</span> <span class="o">=</span> <span class="n">_replace_root_ids</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">scope</span><span class="p">,</span> <span class="n">old_ids</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+        <span class="c1"># `#mermaid-1 :root{...}` styles the root itself, like a bare `:root`.</span>
+        <span class="n">replaced</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">rf</span><span class="s2">"(#</span><span class="si">{</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">scope</span><span class="p">)</span><span class="si">}</span><span class="s2">)\s+:root(?![\w-])"</span><span class="p">,</span> <span class="sa">r</span><span class="s2">"\1"</span><span class="p">,</span> <span class="n">replaced</span><span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">lead</span><span class="si">}{</span><span class="n">replaced</span><span class="si">}{</span><span class="n">trail</span><span class="si">}</span><span class="s2">"</span>
     <span class="c1"># The leading compound: up to the first combinator or whitespace at depth 0.</span>
     <span class="n">end</span> <span class="o">=</span> <span class="n">_scan</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">" </span><span class="se">\t\n\r</span><span class="s2">&gt;+~"</span><span class="p">)</span>
     <span class="n">first</span><span class="p">,</span> <span class="n">rest</span> <span class="o">=</span> <span class="n">body</span><span class="p">[:</span><span class="n">end</span><span class="p">],</span> <span class="n">body</span><span class="p">[</span><span class="n">end</span><span class="p">:]</span>
-    <span class="k">for</span> <span class="n">old</span> <span class="ow">in</span> <span class="n">old_ids</span><span class="p">:</span>  <span class="c1"># mermaid writes `#mermaid-1 .node`: that id is the root's</span>
-        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="sa">rf</span><span class="s2">"#</span><span class="si">{</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">old</span><span class="p">)</span><span class="si">}</span><span class="s2">(?![\w-])\S*"</span><span class="p">,</span> <span class="n">first</span><span class="p">):</span>
-            <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">lead</span><span class="si">}</span><span class="s2">#</span><span class="si">{</span><span class="n">scope</span><span class="si">}{</span><span class="n">first</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">old</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">:]</span><span class="si">}{</span><span class="n">rest</span><span class="si">}{</span><span class="n">trail</span><span class="si">}</span><span class="s2">"</span>
     <span class="k">if</span> <span class="n">first</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">_ROOT_SELECTORS</span> <span class="ow">or</span> <span class="n">first</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span>
-        <span class="nb">tuple</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">:"</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">_ROOT_SELECTORS</span><span class="p">)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">."</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">_ROOT_SELECTORS</span><span class="p">)</span>
+        <span class="nb">tuple</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">:"</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">_ROOT_SELECTORS</span><span class="p">)</span>
+        <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">."</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">_ROOT_SELECTORS</span><span class="p">)</span>
     <span class="p">):</span>
         <span class="n">name</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">_ROOT_SELECTORS</span> <span class="k">if</span> <span class="n">first</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">lead</span><span class="si">}</span><span class="s2">#</span><span class="si">{</span><span class="n">scope</span><span class="si">}{</span><span class="n">first</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">):]</span><span class="si">}{</span><span class="n">rest</span><span class="si">}{</span><span class="n">trail</span><span class="si">}</span><span class="s2">"</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">lead</span><span class="si">}</span><span class="s2">#</span><span class="si">{</span><span class="n">scope</span><span class="si">}{</span><span class="n">first</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="w"> </span><span class="p">:]</span><span class="si">}{</span><span class="n">rest</span><span class="si">}{</span><span class="n">trail</span><span class="si">}</span><span class="s2">"</span>
     <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">lead</span><span class="si">}</span><span class="s2">#</span><span class="si">{</span><span class="n">scope</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">body</span><span class="si">}{</span><span class="n">trail</span><span class="si">}</span><span class="s2">"</span>
 
 
@@ -460,7 +522,7 @@
             <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">css</span><span class="p">[</span><span class="n">i</span><span class="p">:])</span>
             <span class="k">break</span>
         <span class="n">close</span> <span class="o">=</span> <span class="n">_scan</span><span class="p">(</span><span class="n">css</span><span class="p">,</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"}"</span><span class="p">)</span>
-        <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_scope_prelude</span><span class="p">(</span><span class="n">css</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">j</span><span class="p">],</span><span class="w"> </span><span class="n">scope_id</span><span class="p">,</span><span class="w"> </span><span class="n">old_ids</span><span class="p">)</span><span class="si">}{</span><span class="n">css</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">close</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_scope_prelude</span><span class="p">(</span><span class="n">css</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">j</span><span class="p">],</span><span class="w"> </span><span class="n">scope_id</span><span class="p">,</span><span class="w"> </span><span class="n">old_ids</span><span class="p">)</span><span class="si">}{</span><span class="n">css</span><span class="p">[</span><span class="n">j</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">close</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">i</span> <span class="o">=</span> <span class="n">close</span> <span class="o">+</span> <span class="mi">1</span>
     <span class="k">return</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">)</span></div>
 
@@ -497,10 +559,12 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">root</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">svg</span>
     <span class="n">tag</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">old</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">_ATTR_RE</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span> <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"id"</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="n">old_ids</span> <span class="o">=</span> <span class="p">(</span><span class="n">html</span><span class="o">.</span><span class="n">unescape</span><span class="p">(</span><span class="n">old</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">5</span><span class="p">)),)</span> <span class="k">if</span> <span class="n">old</span> <span class="k">else</span> <span class="p">()</span>
-    <span class="k">if</span> <span class="n">old</span><span class="p">:</span>
-        <span class="n">new_tag</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">tag</span><span class="p">[:</span><span class="w"> </span><span class="n">old</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">5</span><span class="p">)]</span><span class="si">}{</span><span class="n">scope_id</span><span class="si">}{</span><span class="n">tag</span><span class="p">[</span><span class="n">old</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="w"> </span><span class="p">:]</span><span class="si">}</span><span class="s2">"</span>
+    <span class="n">ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">_ATTR_RE</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span> <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"id"</span><span class="p">,</span> <span class="s2">"xml:id"</span><span class="p">)]</span>
+    <span class="n">old_ids</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">html</span><span class="o">.</span><span class="n">unescape</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ids</span><span class="p">:</span>  <span class="c1"># replace from the end, so earlier offsets stay valid</span>
+        <span class="n">new_tag</span> <span class="o">=</span> <span class="n">tag</span>
+        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">ids</span><span class="p">):</span>
+            <span class="n">new_tag</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">new_tag</span><span class="p">[:</span><span class="w"> </span><span class="n">a</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">5</span><span class="p">)]</span><span class="si">}{</span><span class="n">scope_id</span><span class="si">}{</span><span class="n">new_tag</span><span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="w"> </span><span class="p">:]</span><span class="si">}</span><span class="s2">"</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">new_tag</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'&lt;svg id="</span><span class="si">{</span><span class="n">scope_id</span><span class="si">}</span><span class="s1">"</span><span class="si">{</span><span class="n">tag</span><span class="p">[</span><span class="mi">4</span><span class="p">:]</span><span class="si">}</span><span class="s1">'</span>
 
@@ -547,7 +611,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=3a6d79cd"></script>
+</div><script src="../../_static/documentation_options.js?v=932d0dab"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

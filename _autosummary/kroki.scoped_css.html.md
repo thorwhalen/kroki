@@ -49,15 +49,15 @@ scope element itself, and so does a leading `#<id>` for an id in *root_ids*
 `@keyframes` and other descriptor blocks are kept as they are; `@import` is
 dropped, since what it imports could not be scoped.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ```pycon
 >>> scope_css('#mermaid-1 .node, svg{fill:red}', 'k', root_ids=['mermaid-1'])
 '#k .node, #k{fill:red}'
 >>> scope_css('@import url(x.css); a[title="a,b{"]{x:1}', 'k')
 ' #k a[title="a,b{"]{x:1}'
 ```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### kroki.scoped_css.scope_svg(svg, scope_id=None)
 
@@ -67,11 +67,11 @@ The `<style>` elements are found as markup (the CSS inside them is rewritten by
 [`scope_css()`](#kroki.scoped_css.scope_css)), with a `CDATA` wrapper kept as it was. The root’s previous
 id, if any, is what its own selectors are rewritten from.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ```pycon
 >>> s = scope_svg('<svg id="m1"><style>#m1 p{x:1} q{y:2}</style></svg>', 'k')
 >>> s
 '<svg id="k"><style>#k p{x:1} #k q{y:2}</style></svg>'
 ```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
