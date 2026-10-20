@@ -397,10 +397,12 @@ def _rename_in_tag(tag: str, mapping: dict) -> str:
 
     tag = _ATTR_RE.sub(attr, tag)
     return _FONT_FAMILY_ATTR_RE.sub(
-        lambda m: m.group(1)
-        + m.group(2)
-        + _xml_attr_escape(_rename_in_value(html.unescape(m.group(3)), mapping))
-        + m.group(2),
+        lambda m: (
+            m.group(1)
+            + m.group(2)
+            + _xml_attr_escape(_rename_in_value(html.unescape(m.group(3)), mapping))
+            + m.group(2)
+        ),
         tag,
     )
 
@@ -408,7 +410,11 @@ def _rename_in_tag(tag: str, mapping: dict) -> str:
 def _rename_tags_outside_styles(svg: str, mapping: dict) -> str:
     out, last = [], 0
     for m in _STYLE_RE.finditer(svg):
-        out.append(_TAG_RE.sub(lambda t: _rename_in_tag(t.group(0), mapping), svg[last : m.start()]))
+        out.append(
+            _TAG_RE.sub(
+                lambda t: _rename_in_tag(t.group(0), mapping), svg[last : m.start()]
+            )
+        )
         out.append(_rename_in_tag(m.group(1), mapping))  # the <style ...> tag itself
         out.append(m.group(2) + m.group(3))
         last = m.end()
