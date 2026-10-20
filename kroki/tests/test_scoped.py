@@ -267,3 +267,55 @@ def test_renamed_names_stay_safe_in_escaped_style_attributes():
     svg = '<svg><style>@font-face{font-family:F}</style><g style="font-family:F; x:&quot;y&quot;"/></svg>'
     out = scope_svg(svg, "k")
     assert 'style="font-family:F-k; x:&quot;y&quot;"' in out
+
+
+def test_single_quoted_style_attribute_cannot_break_out():
+    svg = (
+        "<svg><style>@font-face{font-family:F}</style>"
+        "<g style='font-family:F;a:&apos;\" onload=alert(1) x=&apos;'/></svg>"
+    )
+    out = scope_svg(svg, "k")
+    assert "onload=alert(1) x=" not in out.replace("&apos;", "").replace("&quot;", "") or (
+        "<g style='font-family:F-k;a:&apos;&quot; onload=alert(1) x=&apos;'/>" in out
+    )
+    import xml.etree.ElementTree as ET
+
+    g = ET.fromstring(out)[1]
+    assert list(g.attrib) == ["style"]
+
+
+@pytest.mark.parametrize(
+    "name", [r"a\1", r"a\g<x>", r"a\n", 'a"b', "a<b", "a]]>b", "a&b", "none", "ease"]
+)
+def test_unsafe_or_reserved_names_are_left_alone(name):
+    svg = f'<svg><style><![CDATA[@font-face{{font-family:"{name}"}} t{{font-family:"{name}"}}]]></style></svg>'
+    out = scope_svg(svg, "k")  # must not raise
+    assert f"{name}-k" not in out
+
+
+def test_keyframes_name_inside_the_keyword_is_renamed_in_place():
+    out = scope_svg("<svg><style>@keyframes frames{to{x:1}}</style></svg>", "k")
+    assert "@keyframes frames-k{" in out
+
+
+def test_global_name_scan_is_linear():
+    import time
+
+    svg = "<svg><style>" + "@font-face{font-family:a;" * 6000 + "</style></svg>"
+    t = time.perf_counter()
+    scope_svg(svg, "k")
+    assert time.perf_counter() - t < 2
+
+
+def test_many_names_do_not_blow_up():
+    import time
+
+    css = "".join(f"@keyframes n{i}{{to{{x:1}}}} " for i in range(3000))
+    t = time.perf_counter()
+    scope_svg(f"<svg><style>{css}a{{animation:n1 1s}}</style></svg>", "k")
+    assert time.perf_counter() - t < 3
+
+
+def test_font_family_attribute_entities_are_decoded_before_matching():
+    svg = '<svg><style>@font-face{font-family:"A B"}</style><text font-family="A B"/></svg>'
+    assert 'font-family="A B-k"' in scope_svg(svg, "k")

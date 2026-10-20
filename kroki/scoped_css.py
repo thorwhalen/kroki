@@ -303,7 +303,7 @@ _ATTR_RE = re.compile(r"""(\s)([\w:.-]+)(\s*=\s*)(["'])(.*?)\4""", re.DOTALL)
 # ``style`` and ``font-family`` attributes. ``@property`` registrations are not
 # renamed (references go through ``var(--name)`` anywhere in a value), and text
 # nodes are never touched.
-_FONT_FACE_RE = re.compile(r"@font-face\s*\{([^}]*)\}", re.IGNORECASE)
+_FONT_FACE_START_RE = re.compile(r"@font-face\s*\{", re.IGNORECASE)
 _FONT_FAMILY_DECL_RE = re.compile(r"font-family\s*:\s*([^;}]+)", re.IGNORECASE)
 _KEYFRAMES_RE = re.compile(
     r"@(?:-\w+-)?keyframes\s+(?:\"([^\"]+)\"|'([^']+)'|([^\s{\"']+))", re.IGNORECASE
@@ -314,25 +314,51 @@ _REFERENCE_DECL_RE = re.compile(
 )
 _FONT_FAMILY_ATTR_RE = re.compile(r"""(\sfont-family\s*=\s*)(["'])(.*?)\2""", re.DOTALL)
 _TAG_RE = re.compile(rf"<[A-Za-z][\w:.-]*{_ATTRS}/?>", re.DOTALL)
+#: Only plain names are renamed. Anything with a quote, backslash, ``<``, ``&``... is
+#: left alone: the new name is written into CSS, CDATA and attribute values, and
+#: must not be able to end any of them.
+_SAFE_NAME_RE = re.compile(r"[A-Za-z_][\w .-]*\Z")
+#: Words that mean something to ``font``/``animation`` other than a defined name.
+_RESERVED_NAMES = frozenset(
+    "none initial inherit unset revert revert-layer default normal "
+    "serif sans-serif monospace cursive fantasy system-ui ui-serif ui-sans-serif "
+    "ui-monospace ui-rounded emoji math fangsong "
+    "ease ease-in ease-out ease-in-out linear step-start step-end infinite "
+    "alternate alternate-reverse reverse forwards backwards both running paused".split()
+)
 
 
 def _global_names(css: str) -> list[str]:
     """The ``@font-face`` family names and ``@keyframes`` names *css* defines."""
     names = []
-    for block in _FONT_FACE_RE.finditer(css):
-        for decl in _FONT_FAMILY_DECL_RE.finditer(block.group(1)):
+    pos = 0
+    while start := _FONT_FACE_START_RE.search(css, pos):
+        # A descriptor block has no nested braces: it ends at the next "}". Resuming
+        # there keeps the scan linear (an unclosed block just runs to the end).
+        end = css.find("}", start.end())
+        pos = len(css) if end < 0 else end
+        for decl in _FONT_FAMILY_DECL_RE.finditer(css, start.end(), pos):
             names.extend(
                 n.strip().strip("\"'") for n in _split_top_level(decl.group(1))
             )
     for m in _KEYFRAMES_RE.finditer(css):
         names.append(next(g for g in m.groups() if g))
-    return [n for n in dict.fromkeys(names) if n]
+    return [
+        n
+        for n in dict.fromkeys(names)
+        if _SAFE_NAME_RE.match(n) and n.lower() not in _RESERVED_NAMES
+    ]
 
 
 def _rename_in_value(value: str, mapping: dict) -> str:
-    for old in sorted(mapping, key=len, reverse=True):
-        value = re.sub(rf"(?<![-\w]){re.escape(old)}(?![-\w])", mapping[old], value)
-    return value
+    if not mapping:
+        return value
+    names = sorted(mapping, key=len, reverse=True)
+    pattern = "|".join(re.escape(n) for n in names)
+    # A function, not a template: the new name is data, not a backreference.
+    return re.sub(
+        rf"(?<![-\w])(?:{pattern})(?![-\w])", lambda m: mapping[m.group(0)], value
+    )
 
 
 def _rename_globals(css: str, mapping: dict) -> str:
@@ -344,10 +370,18 @@ def _rename_globals(css: str, mapping: dict) -> str:
     )
 
     def keyframes(m):
-        old = next(g for g in m.groups() if g)
-        return m.group(0).replace(old, mapping.get(old, old), 1)
+        i = next(i for i, g in enumerate(m.groups(), 1) if g)
+        old = m.group(i)
+        head, tail = m.start(i) - m.start(), m.end(i) - m.start()
+        text = m.group(0)
+        return text[:head] + mapping.get(old, old) + text[tail:]
 
     return _KEYFRAMES_RE.sub(keyframes, css)
+
+
+def _xml_attr_escape(text: str) -> str:
+    """*text* as an attribute value in either quote style."""
+    return xml_escape(text, {'"': "&quot;", "'": "&apos;"})
 
 
 def _rename_in_tag(tag: str, mapping: dict) -> str:
@@ -357,14 +391,15 @@ def _rename_in_tag(tag: str, mapping: dict) -> str:
         value = m.group(5)
         if m.group(2) == "style":
             # An attribute value is XML text: compare and rewrite it decoded.
-            value = xml_escape(
-                _rename_globals(html.unescape(value), mapping), {'"': "&quot;"}
-            )
+            value = _xml_attr_escape(_rename_globals(html.unescape(value), mapping))
         return f"{m.group(1)}{m.group(2)}{m.group(3)}{m.group(4)}{value}{m.group(4)}"
 
     tag = _ATTR_RE.sub(attr, tag)
     return _FONT_FAMILY_ATTR_RE.sub(
-        lambda m: f"{m.group(1)}{m.group(2)}{_rename_in_value(m.group(3), mapping)}{m.group(2)}",
+        lambda m: m.group(1)
+        + m.group(2)
+        + _xml_attr_escape(_rename_in_value(html.unescape(m.group(3)), mapping))
+        + m.group(2),
         tag,
     )
 
