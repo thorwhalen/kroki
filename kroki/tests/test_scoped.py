@@ -230,3 +230,92 @@ def test_contradictory_isolate_svg_and_svg_display_are_refused():
     with pytest.raises(ValueError, match="contradicts"):
         bytes_to_image(LEAKY_SVG, isolate_svg=False, svg_display="isolate")
     assert type(bytes_to_image(LEAKY_SVG, isolate_svg=True, svg_display="isolate")) is kroki.IsolatedSVG
+
+
+# --------------------------------------------------------- global names (#12)
+
+FONT_SVG = (
+    '<svg id="a"><style><![CDATA[@font-face{font-family:"Inter";src:url(f.woff)} '
+    "text{font-family:Inter, sans-serif} .x{animation:spin 1s} "
+    "@keyframes spin{from{opacity:0}}]]></style>"
+    '<text font-family="Inter" style="font: 12px Inter">Inter font: Inter</text></svg>'
+)
+
+
+def test_font_face_and_keyframes_names_are_renamed_per_scope():
+    out = scope_svg(FONT_SVG, "k")
+    assert '@font-face{font-family:"Inter-k"' in out
+    assert "font-family:Inter-k, sans-serif" in out
+    assert "animation:spin-k 1s" in out and "@keyframes spin-k" in out
+    assert 'font-family="Inter-k"' in out and 'style="font: 12px Inter-k"' in out
+    # text content is never rewritten
+    assert ">Inter font: Inter</text>" in out
+
+
+def test_two_scopes_do_not_share_font_names():
+    a, b = scope_svg(FONT_SVG, "k1"), scope_svg(FONT_SVG, "k2")
+    assert "Inter-k1" in a and "Inter-k2" not in a
+    assert "Inter-k2" in b and "Inter-k1" not in b
+
+
+def test_svg_without_global_names_is_unchanged_by_renaming():
+    svg = '<svg id="a"><style>text{font-family:Inter}</style></svg>'
+    assert scope_svg(svg, "k") == '<svg id="k"><style>#k text{font-family:Inter}</style></svg>'
+
+
+def test_renamed_names_stay_safe_in_escaped_style_attributes():
+    svg = '<svg><style>@font-face{font-family:F}</style><g style="font-family:F; x:&quot;y&quot;"/></svg>'
+    out = scope_svg(svg, "k")
+    assert 'style="font-family:F-k; x:&quot;y&quot;"' in out
+
+
+def test_single_quoted_style_attribute_cannot_break_out():
+    svg = (
+        "<svg><style>@font-face{font-family:F}</style>"
+        "<g style='font-family:F;a:&apos;\" onload=alert(1) x=&apos;'/></svg>"
+    )
+    out = scope_svg(svg, "k")
+    assert "onload=alert(1) x=" not in out.replace("&apos;", "").replace("&quot;", "") or (
+        "<g style='font-family:F-k;a:&apos;&quot; onload=alert(1) x=&apos;'/>" in out
+    )
+    import xml.etree.ElementTree as ET
+
+    g = ET.fromstring(out)[1]
+    assert list(g.attrib) == ["style"]
+
+
+@pytest.mark.parametrize(
+    "name", [r"a\1", r"a\g<x>", r"a\n", 'a"b', "a<b", "a]]>b", "a&b", "none", "ease"]
+)
+def test_unsafe_or_reserved_names_are_left_alone(name):
+    svg = f'<svg><style><![CDATA[@font-face{{font-family:"{name}"}} t{{font-family:"{name}"}}]]></style></svg>'
+    out = scope_svg(svg, "k")  # must not raise
+    assert f"{name}-k" not in out
+
+
+def test_keyframes_name_inside_the_keyword_is_renamed_in_place():
+    out = scope_svg("<svg><style>@keyframes frames{to{x:1}}</style></svg>", "k")
+    assert "@keyframes frames-k{" in out
+
+
+def test_global_name_scan_is_linear():
+    import time
+
+    svg = "<svg><style>" + "@font-face{font-family:a;" * 6000 + "</style></svg>"
+    t = time.perf_counter()
+    scope_svg(svg, "k")
+    assert time.perf_counter() - t < 2
+
+
+def test_many_names_do_not_blow_up():
+    import time
+
+    css = "".join(f"@keyframes n{i}{{to{{x:1}}}} " for i in range(3000))
+    t = time.perf_counter()
+    scope_svg(f"<svg><style>{css}a{{animation:n1 1s}}</style></svg>", "k")
+    assert time.perf_counter() - t < 3
+
+
+def test_font_family_attribute_entities_are_decoded_before_matching():
+    svg = '<svg><style>@font-face{font-family:"A B"}</style><text font-family="A B"/></svg>'
+    assert 'font-family="A B-k"' in scope_svg(svg, "k")
