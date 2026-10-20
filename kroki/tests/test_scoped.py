@@ -230,3 +230,40 @@ def test_contradictory_isolate_svg_and_svg_display_are_refused():
     with pytest.raises(ValueError, match="contradicts"):
         bytes_to_image(LEAKY_SVG, isolate_svg=False, svg_display="isolate")
     assert type(bytes_to_image(LEAKY_SVG, isolate_svg=True, svg_display="isolate")) is kroki.IsolatedSVG
+
+
+# --------------------------------------------------------- global names (#12)
+
+FONT_SVG = (
+    '<svg id="a"><style><![CDATA[@font-face{font-family:"Inter";src:url(f.woff)} '
+    "text{font-family:Inter, sans-serif} .x{animation:spin 1s} "
+    "@keyframes spin{from{opacity:0}}]]></style>"
+    '<text font-family="Inter" style="font: 12px Inter">Inter font: Inter</text></svg>'
+)
+
+
+def test_font_face_and_keyframes_names_are_renamed_per_scope():
+    out = scope_svg(FONT_SVG, "k")
+    assert '@font-face{font-family:"Inter-k"' in out
+    assert "font-family:Inter-k, sans-serif" in out
+    assert "animation:spin-k 1s" in out and "@keyframes spin-k" in out
+    assert 'font-family="Inter-k"' in out and 'style="font: 12px Inter-k"' in out
+    # text content is never rewritten
+    assert ">Inter font: Inter</text>" in out
+
+
+def test_two_scopes_do_not_share_font_names():
+    a, b = scope_svg(FONT_SVG, "k1"), scope_svg(FONT_SVG, "k2")
+    assert "Inter-k1" in a and "Inter-k2" not in a
+    assert "Inter-k2" in b and "Inter-k1" not in b
+
+
+def test_svg_without_global_names_is_unchanged_by_renaming():
+    svg = '<svg id="a"><style>text{font-family:Inter}</style></svg>'
+    assert scope_svg(svg, "k") == '<svg id="k"><style>#k text{font-family:Inter}</style></svg>'
+
+
+def test_renamed_names_stay_safe_in_escaped_style_attributes():
+    svg = '<svg><style>@font-face{font-family:F}</style><g style="font-family:F; x:&quot;y&quot;"/></svg>'
+    out = scope_svg(svg, "k")
+    assert 'style="font-family:F-k; x:&quot;y&quot;"' in out
