@@ -131,18 +131,71 @@ def _split_top_level(text: str, sep: str = ",") -> list[str]:
 # ------------------------------------------------------------------------ selectors
 
 
+def _replace_root_ids(body: str, scope: str, old_ids: frozenset) -> tuple[str, bool]:
+    """*body* with each ``#<old root id>`` replaced by ``#<scope>``, and whether any was.
+
+    Strings, comments and attribute selectors are skipped, so a ``#id`` inside them
+    is left alone.
+    """
+    out, i, found = [], 0, False
+    while i < len(body):
+        c = body[i]
+        if c in "\"'":
+            j = _skip_string(body, i)
+        elif body.startswith("/*", i):
+            j = _skip_comment(body, i)
+        elif c == "[":
+            j = _scan(body, i + 1, "]") + 1
+        elif c == "\\":
+            j = i + 2
+        elif c == "#":
+            hit = next(
+                (
+                    o
+                    for o in old_ids
+                    if o
+                    and body.startswith(o, i + 1)
+                    and not (
+                        len(body) > i + 1 + len(o) and _is_name_char(body[i + 1 + len(o)])
+                    )
+                ),
+                None,
+            )
+            if hit is not None:
+                out.append(f"#{scope}")
+                i += 1 + len(hit)
+                found = True
+                continue
+            j = i + 1
+        else:
+            j = i + 1
+        out.append(body[i:j])
+        i = j
+    return "".join(out), found
+
+
 def _scope_selector(selector: str, scope: str, old_ids: frozenset) -> str:
     lead = selector[: len(selector) - len(selector.lstrip())]
     trail = selector[len(selector.rstrip()) :]
     body = selector.strip()
+    # Comments at the head are set aside, or they would hide the root selector.
+    while body.startswith("/*"):
+        j = _skip_comment(body, 0)
+        rest = body[j:]
+        lead += body[:j] + rest[: len(rest) - len(rest.lstrip())]
+        body = rest.lstrip()
     if not body:
         return selector
+    # mermaid writes `#mermaid-1 .node`, possibly after other compounds
+    # (`.dark #mermaid-1 .node`): that id is the root's, so it becomes the scope.
+    replaced, found = _replace_root_ids(body, scope, old_ids)
+    if found:
+        # `#mermaid-1 :root{...}` styles the root itself, like a bare `:root`.
+        replaced = re.sub(rf"(#{re.escape(scope)})\s+:root(?![\w-])", r"\1", replaced)
+        return f"{lead}{replaced}{trail}"
     # The leading compound: up to the first combinator or whitespace at depth 0.
     end = _scan(body, 0, " \t\n\r>+~")
     first, rest = body[:end], body[end:]
-    for old in old_ids:  # mermaid writes `#mermaid-1 .node`: that id is the root's
-        if re.fullmatch(rf"#{re.escape(old)}(?![\w-])\S*", first):
-            return f"{lead}#{scope}{first[len(old) + 1 :]}{rest}{trail}"
     if first.lower() in _ROOT_SELECTORS or first.lower().startswith(
         tuple(f"{s}:" for s in _ROOT_SELECTORS)
         + tuple(f"{s}." for s in _ROOT_SELECTORS)
@@ -255,10 +308,12 @@ def scope_svg(svg: str, scope_id: str | None = None) -> str:
     if not root:
         return svg
     tag = root.group(0)
-    old = next((a for a in _ATTR_RE.finditer(tag) if a.group(2) == "id"), None)
-    old_ids = (html.unescape(old.group(5)),) if old else ()
-    if old:
-        new_tag = f"{tag[: old.start(5)]}{scope_id}{tag[old.end(5) :]}"
+    ids = [a for a in _ATTR_RE.finditer(tag) if a.group(2) in ("id", "xml:id")]
+    old_ids = tuple(html.unescape(a.group(5)) for a in ids)
+    if ids:  # replace from the end, so earlier offsets stay valid
+        new_tag = tag
+        for a in reversed(ids):
+            new_tag = f"{new_tag[: a.start(5)]}{scope_id}{new_tag[a.end(5) :]}"
     else:
         new_tag = f'<svg id="{scope_id}"{tag[4:]}'
 

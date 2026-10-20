@@ -256,6 +256,12 @@ def bytes_to_image(
     Without *svg_display*, *isolate_svg* chooses between ``"isolate"`` and
     ``"inline"``, and ``None`` for both follows :data:`ISOLATE_SVG`.
     """
+    if svg_display is not None and isolate_svg is not None:
+        if isolate_svg != (svg_display == "isolate"):
+            raise ValueError(
+                f"isolate_svg={isolate_svg} contradicts svg_display={svg_display!r}; "
+                "pass only svg_display"
+            )
     if svg_display is None:
         if isolate_svg is None:
             isolate_svg = ISOLATE_SVG

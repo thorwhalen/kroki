@@ -202,3 +202,31 @@ def test_page_global_at_rules_are_scoped_or_dropped():
 def test_a_gt_inside_a_root_attribute_does_not_end_the_tag():
     out = scope_svg('<svg aria-label="a > b" id="m"><style>#m .n{x:1}</style></svg>', "k")
     assert out == '<svg aria-label="a > b" id="k"><style>#k .n{x:1}</style></svg>'
+
+
+# --- edge cases from #11 -------------------------------------------------------------
+
+
+def test_xml_id_on_the_root_is_the_roots_old_id():
+    out = scope_svg('<svg xml:id="m"><style>#m .n{x:1}</style></svg>', "k")
+    assert "#k .n{x:1}" in out and 'xml:id="k"' in out
+
+
+def test_a_comment_at_the_head_of_a_part_does_not_hide_the_root():
+    assert scope_css("a, /* c */ :root p{x:1}", "k") == "#k a, /* c */ #k p{x:1}"
+
+
+def test_the_old_root_id_is_recognised_in_any_compound():
+    assert scope_css(".dark #m .node{x:1}", "k", root_ids=["m"]) == ".dark #k .node{x:1}"
+    assert scope_css("#m :root{--a:1}", "k", root_ids=["m"]) == "#k{--a:1}"
+    # a lookalike id, and one inside an attribute selector, are not the root
+    assert scope_css("#mx p{x:1}", "k", root_ids=["m"]) == "#k #mx p{x:1}"
+    assert scope_css('[data-i="#m"]{x:1}', "k", root_ids=["m"]) == '#k [data-i="#m"]{x:1}'
+
+
+def test_contradictory_isolate_svg_and_svg_display_are_refused():
+    with pytest.raises(ValueError, match="contradicts"):
+        bytes_to_image(LEAKY_SVG, isolate_svg=True, svg_display="scoped")
+    with pytest.raises(ValueError, match="contradicts"):
+        bytes_to_image(LEAKY_SVG, isolate_svg=False, svg_display="isolate")
+    assert type(bytes_to_image(LEAKY_SVG, isolate_svg=True, svg_display="isolate")) is kroki.IsolatedSVG
