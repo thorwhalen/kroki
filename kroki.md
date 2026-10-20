@@ -1,4 +1,4 @@
-> built 2026-10-20 11:37 UTC from f0fcd61 (main) · kroki 0.1.11. Details: build_info.json
+> built 2026-10-20 12:44 UTC from fd94252 (main) · kroki 0.1.12. Details: build_info.json
 
 # index.html.md
 
@@ -377,7 +377,8 @@ Each selector is prefixed with `#<scope_id> ``; a leading ``:root`, `html`,
 scope element itself, and so does a leading `#<id>` for an id in *root_ids*
 (the SVG root’s own id, which mermaid’s selectors name). `@media`,
 `@supports` and similar blocks are scoped inside; `@font-face`,
-`@keyframes` and other descriptor blocks are kept as they are; `@import` is
+`@keyframes` and other descriptor blocks are kept as they are ([`scope_svg()`](_autosummary/kroki.scoped_css.html.md#kroki.scoped_css.scope_svg)
+renames their global names per scope); `@import` is
 dropped, since what it imports could not be scoped.
 
 ```pycon
@@ -438,18 +439,16 @@ pytest, so importing `kroki.test` still requires nothing beyond `kroki` itself.
 
 # About this build
 
-This documentation was built on **2026-10-20 11:37 UTC** from commit <a href="https://github.com/thorwhalen/kroki/commit/f0fcd61924486ac4fcedb4041945aff48f826337"><code>f0fcd61</code></a> on branch <code>main</code>, for **kroki 0.1.11** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-20 12:44 UTC** from commit <a href="https://github.com/thorwhalen/kroki/commit/fd942526bb308a97a1e1610501bb0016d0906f77"><code>fd94252</code></a> on branch <code>main</code>, for **kroki 0.1.12** (from <code>pyproject.toml</code>).
 
-#### WARNING
-The documentation and the package may be misaligned:
-
-- The documented version (0.1.11) is behind the latest release on PyPI (0.1.12): `pip install kroki` gives newer code than these docs describe.
+#### NOTE
+Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
 
 ## Source
 
 |                     |                                                                                                                                                         |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/kroki/commit/f0fcd61924486ac4fcedb4041945aff48f826337"><code>f0fcd61924486ac4fcedb4041945aff48f826337</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/kroki/commit/fd942526bb308a97a1e1610501bb0016d0906f77"><code>fd942526bb308a97a1e1610501bb0016d0906f77</code></a> |
 | Branch              | <code>main</code>                                                                                                                                       |
 | Tags at this commit | none                                                                                                                                                    |
 | Working tree        | clean                                                                                                                                                   |
@@ -460,15 +459,15 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/kroki</code>                                                              |
-| Run          | <a href="https://github.com/thorwhalen/kroki/actions/runs/39416061720">39416061720</a>     |
+| Run          | <a href="https://github.com/thorwhalen/kroki/actions/runs/39424408707">39424408707</a>     |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>f0fcd61924486ac4fcedb4041945aff48f826337</code> (in the history of the built commit) |
+| Event commit | <code>fd942526bb308a97a1e1610501bb0016d0906f77</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.19  |
+| epythet  | 0.2.20  |
 | Sphinx   | 9.1.1   |
 | docutils | 0.22.4  |
 | Python   | 3.12.15 |
@@ -487,14 +486,14 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/kroki/0.1.12/">0.1.12</a>, newer than the documented version (0.1.11).
+Latest release: <a href="https://pypi.org/project/kroki/0.1.12/">0.1.12</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/kroki && cd kroki
-git checkout f0fcd61924486ac4fcedb4041945aff48f826337
-pip install "epythet==0.2.19"
+git checkout fd942526bb308a97a1e1610501bb0016d0906f77
+pip install "epythet==0.2.20"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 

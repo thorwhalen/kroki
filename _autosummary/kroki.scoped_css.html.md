@@ -46,7 +46,8 @@ Each selector is prefixed with `#<scope_id> ``; a leading ``:root`, `html`,
 scope element itself, and so does a leading `#<id>` for an id in *root_ids*
 (the SVG root’s own id, which mermaid’s selectors name). `@media`,
 `@supports` and similar blocks are scoped inside; `@font-face`,
-`@keyframes` and other descriptor blocks are kept as they are; `@import` is
+`@keyframes` and other descriptor blocks are kept as they are ([`scope_svg()`](#kroki.scoped_css.scope_svg)
+renames their global names per scope); `@import` is
 dropped, since what it imports could not be scoped.
 
 ```pycon

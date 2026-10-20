@@ -305,7 +305,8 @@ id of an old one, whose scoped CSS would then style both.</p>
 scope element itself, and so does a leading <code class="docutils literal notranslate"><span class="pre">#&lt;id&gt;</span></code> for an id in <em>root_ids</em>
 (the SVG root’s own id, which mermaid’s selectors name). <code class="docutils literal notranslate"><span class="pre">&#64;media</span></code>,
 <code class="docutils literal notranslate"><span class="pre">&#64;supports</span></code> and similar blocks are scoped inside; <code class="docutils literal notranslate"><span class="pre">&#64;font-face</span></code>,
-<code class="docutils literal notranslate"><span class="pre">&#64;keyframes</span></code> and other descriptor blocks are kept as they are; <code class="docutils literal notranslate"><span class="pre">&#64;import</span></code> is
+<code class="docutils literal notranslate"><span class="pre">&#64;keyframes</span></code> and other descriptor blocks are kept as they are (<a class="reference internal" href="#kroki.scoped_css.scope_svg" title="kroki.scoped_css.scope_svg"><code class="xref py py-func docutils literal notranslate"><span class="pre">scope_svg()</span></code></a>
+renames their global names per scope); <code class="docutils literal notranslate"><span class="pre">&#64;import</span></code> is
 dropped, since what it imports could not be scoped.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">scope_css</span><span class="p">(</span><span class="s1">'#mermaid-1 .node, svg{fill:red}'</span><span class="p">,</span> <span class="s1">'k'</span><span class="p">,</span> <span class="n">root_ids</span><span class="o">=</span><span class="p">[</span><span class="s1">'mermaid-1'</span><span class="p">])</span>
 <span class="go">'#k .node, #k{fill:red}'</span>
@@ -407,7 +408,7 @@ id, if any, is what its own selectors are rewritten from.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=932d0dab"></script>
+</div><script src="../_static/documentation_options.js?v=b39c9740"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

@@ -10,7 +10,7 @@
 - [kroki](_autosummary/kroki.html.md): Kroki from python
 - [kroki.scoped_css](_autosummary/kroki.scoped_css.html.md): Scope a stylesheet to one element, so an inlined SVG’s CSS cannot restyle the page.
 - [kroki.test](_autosummary/kroki.test.html.md): Backwards compatible shim for the legacy &#96;kroki.test&#96; module.
-- [About this build](about-this-build.html.md): This documentation was built on &#42;&#42;2026-10-20 11:37 UTC&#42;&#42; from commit &lt;a href="https://github.com/tho...
+- [About this build](about-this-build.html.md): This documentation was built on &#42;&#42;2026-10-20 12:44 UTC&#42;&#42; from commit &lt;a href="https://github.com/tho...
 
 ## Optional
 

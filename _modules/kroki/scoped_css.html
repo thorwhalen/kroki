@@ -402,7 +402,8 @@
                     <span class="k">if</span> <span class="n">o</span>
                     <span class="ow">and</span> <span class="n">body</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
                     <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span>
-                        <span class="nb">len</span><span class="p">(</span><span class="n">body</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">o</span><span class="p">)</span> <span class="ow">and</span> <span class="n">_is_name_char</span><span class="p">(</span><span class="n">body</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">o</span><span class="p">)])</span>
+                        <span class="nb">len</span><span class="p">(</span><span class="n">body</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">o</span><span class="p">)</span>
+                        <span class="ow">and</span> <span class="n">_is_name_char</span><span class="p">(</span><span class="n">body</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">o</span><span class="p">)])</span>
                     <span class="p">)</span>
                 <span class="p">),</span>
                 <span class="kc">None</span><span class="p">,</span>
@@ -470,7 +471,8 @@
 <span class="sd">    scope element itself, and so does a leading ``#&lt;id&gt;`` for an id in *root_ids*</span>
 <span class="sd">    (the SVG root's own id, which mermaid's selectors name). ``@media``,</span>
 <span class="sd">    ``@supports`` and similar blocks are scoped inside; ``@font-face``,</span>
-<span class="sd">    ``@keyframes`` and other descriptor blocks are kept as they are; ``@import`` is</span>
+<span class="sd">    ``@keyframes`` and other descriptor blocks are kept as they are (:func:`scope_svg`</span>
+<span class="sd">    renames their global names per scope); ``@import`` is</span>
 <span class="sd">    dropped, since what it imports could not be scoped.</span>
 
 <span class="sd">    &gt;&gt;&gt; scope_css('#mermaid-1 .node, svg{fill:red}', 'k', root_ids=['mermaid-1'])</span>
@@ -541,6 +543,128 @@
 <span class="n">_ATTR_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"""(\s)([\w:.-]+)(\s*=\s*)(["'])(.*?)\4"""</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
 
 
+<span class="c1"># ------------------------------------------------------------- global names (#12)</span>
+
+<span class="c1"># ``@font-face`` families and ``@keyframes`` names are page-global: an SVG that</span>
+<span class="c1"># declares ``@font-face{font-family:Inter}`` redefines the notebook's own Inter.</span>
+<span class="c1"># They are renamed per scope (``Inter`` -&gt; ``Inter-&lt;scope_id&gt;``) in the definition</span>
+<span class="c1"># and in every reference this module can see: ``font-family``/``font``/</span>
+<span class="c1"># ``animation``/``animation-name`` declarations in the SVG's stylesheets and in its</span>
+<span class="c1"># ``style`` and ``font-family`` attributes. ``@property`` registrations are not</span>
+<span class="c1"># renamed (references go through ``var(--name)`` anywhere in a value), and text</span>
+<span class="c1"># nodes are never touched.</span>
+<span class="n">_FONT_FACE_START_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"@font-face\s*\{"</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+<span class="n">_FONT_FAMILY_DECL_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"font-family\s*:\s*([^;}]+)"</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+<span class="n">_KEYFRAMES_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+    <span class="sa">r</span><span class="s2">"@(?:-\w+-)?keyframes\s+(?:</span><span class="se">\"</span><span class="s2">([^</span><span class="se">\"</span><span class="s2">]+)</span><span class="se">\"</span><span class="s2">|'([^']+)'|([^\s{</span><span class="se">\"</span><span class="s2">']+))"</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span>
+<span class="p">)</span>
+<span class="n">_REFERENCE_DECL_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+    <span class="sa">r</span><span class="s2">"(?&lt;![-\w])(font-family|font|animation-name|animation)(\s*:\s*)([^;</span><span class="si">{}</span><span class="s2">]*)"</span><span class="p">,</span>
+    <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">_FONT_FAMILY_ATTR_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"""(\sfont-family\s*=\s*)(["'])(.*?)\2"""</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+<span class="n">_TAG_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">rf</span><span class="s2">"&lt;[A-Za-z][\w:.-]*</span><span class="si">{</span><span class="n">_ATTRS</span><span class="si">}</span><span class="s2">/?&gt;"</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+<span class="c1">#: Only plain names are renamed. Anything with a quote, backslash, ``&lt;``, ``&amp;``... is</span>
+<span class="c1">#: left alone: the new name is written into CSS, CDATA and attribute values, and</span>
+<span class="c1">#: must not be able to end any of them.</span>
+<span class="n">_SAFE_NAME_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"[A-Za-z_][\w .-]*\Z"</span><span class="p">)</span>
+<span class="c1">#: Words that mean something to ``font``/``animation`` other than a defined name.</span>
+<span class="n">_RESERVED_NAMES</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span>
+    <span class="s2">"none initial inherit unset revert revert-layer default normal "</span>
+    <span class="s2">"serif sans-serif monospace cursive fantasy system-ui ui-serif ui-sans-serif "</span>
+    <span class="s2">"ui-monospace ui-rounded emoji math fangsong "</span>
+    <span class="s2">"ease ease-in ease-out ease-in-out linear step-start step-end infinite "</span>
+    <span class="s2">"alternate alternate-reverse reverse forwards backwards both running paused"</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+<span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_global_names</span><span class="p">(</span><span class="n">css</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""The ``@font-face`` family names and ``@keyframes`` names *css* defines."""</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">start</span> <span class="o">:=</span> <span class="n">_FONT_FACE_START_RE</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">css</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+        <span class="c1"># A descriptor block has no nested braces: it ends at the next "}". Resuming</span>
+        <span class="c1"># there keeps the scan linear (an unclosed block just runs to the end).</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">css</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">"}"</span><span class="p">,</span> <span class="n">start</span><span class="o">.</span><span class="n">end</span><span class="p">())</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">css</span><span class="p">)</span> <span class="k">if</span> <span class="n">end</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">end</span>
+        <span class="k">for</span> <span class="n">decl</span> <span class="ow">in</span> <span class="n">_FONT_FAMILY_DECL_RE</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">css</span><span class="p">,</span> <span class="n">start</span><span class="o">.</span><span class="n">end</span><span class="p">(),</span> <span class="n">pos</span><span class="p">):</span>
+            <span class="n">names</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                <span class="n">n</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">"</span><span class="se">\"</span><span class="s2">'"</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">_split_top_level</span><span class="p">(</span><span class="n">decl</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+            <span class="p">)</span>
+    <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">_KEYFRAMES_RE</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">css</span><span class="p">):</span>
+        <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">g</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span> <span class="k">if</span> <span class="n">g</span><span class="p">))</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="n">n</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">_SAFE_NAME_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="ow">and</span> <span class="n">n</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_RESERVED_NAMES</span>
+    <span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_rename_in_value</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mapping</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">mapping</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">value</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">mapping</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="nb">len</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">pattern</span> <span class="o">=</span> <span class="s2">"|"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">names</span><span class="p">)</span>
+    <span class="c1"># A function, not a template: the new name is data, not a backreference.</span>
+    <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span>
+        <span class="sa">rf</span><span class="s2">"(?&lt;![-\w])(?:</span><span class="si">{</span><span class="n">pattern</span><span class="si">}</span><span class="s2">)(?![-\w])"</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">mapping</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)],</span> <span class="n">value</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_rename_globals</span><span class="p">(</span><span class="n">css</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mapping</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""*css* with the names in *mapping* renamed in definitions and references."""</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">mapping</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">css</span>
+    <span class="n">css</span> <span class="o">=</span> <span class="n">_REFERENCE_DECL_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">_rename_in_value</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">mapping</span><span class="p">),</span> <span class="n">css</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">keyframes</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">groups</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">g</span><span class="p">)</span>
+        <span class="n">old</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">head</span><span class="p">,</span> <span class="n">tail</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">-</span> <span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">(),</span> <span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">-</span> <span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">text</span><span class="p">[:</span><span class="n">head</span><span class="p">]</span> <span class="o">+</span> <span class="n">mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">old</span><span class="p">,</span> <span class="n">old</span><span class="p">)</span> <span class="o">+</span> <span class="n">text</span><span class="p">[</span><span class="n">tail</span><span class="p">:]</span>
+
+    <span class="k">return</span> <span class="n">_KEYFRAMES_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">keyframes</span><span class="p">,</span> <span class="n">css</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_xml_attr_escape</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""*text* as an attribute value in either quote style."""</span>
+    <span class="k">return</span> <span class="n">xml_escape</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="p">{</span><span class="s1">'"'</span><span class="p">:</span> <span class="s2">"&amp;quot;"</span><span class="p">,</span> <span class="s2">"'"</span><span class="p">:</span> <span class="s2">"&amp;apos;"</span><span class="p">})</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_rename_in_tag</span><span class="p">(</span><span class="n">tag</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mapping</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""*tag* with *mapping* applied to its ``style`` and ``font-family`` attributes."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">attr</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"style"</span><span class="p">:</span>
+            <span class="c1"># An attribute value is XML text: compare and rewrite it decoded.</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">_xml_attr_escape</span><span class="p">(</span><span class="n">_rename_globals</span><span class="p">(</span><span class="n">html</span><span class="o">.</span><span class="n">unescape</span><span class="p">(</span><span class="n">value</span><span class="p">),</span> <span class="n">mapping</span><span class="p">))</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="si">}{</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="si">}{</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="si">}{</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="si">}{</span><span class="n">value</span><span class="si">}{</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+
+    <span class="n">tag</span> <span class="o">=</span> <span class="n">_ATTR_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_FONT_FAMILY_ATTR_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="o">+</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="o">+</span> <span class="n">_xml_attr_escape</span><span class="p">(</span><span class="n">_rename_in_value</span><span class="p">(</span><span class="n">html</span><span class="o">.</span><span class="n">unescape</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)),</span> <span class="n">mapping</span><span class="p">))</span>
+        <span class="o">+</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+        <span class="n">tag</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_rename_tags_outside_styles</span><span class="p">(</span><span class="n">svg</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mapping</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">out</span><span class="p">,</span> <span class="n">last</span> <span class="o">=</span> <span class="p">[],</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">_STYLE_RE</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">svg</span><span class="p">):</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_TAG_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">_rename_in_tag</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">mapping</span><span class="p">),</span> <span class="n">svg</span><span class="p">[</span><span class="n">last</span> <span class="p">:</span> <span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">()]))</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_rename_in_tag</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">mapping</span><span class="p">))</span>  <span class="c1"># the &lt;style ...&gt; tag itself</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+        <span class="n">last</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_TAG_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">_rename_in_tag</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">mapping</span><span class="p">),</span> <span class="n">svg</span><span class="p">[</span><span class="n">last</span><span class="p">:]))</span>
+    <span class="k">return</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="scope_svg">
 <a class="viewcode-back" href="../../_autosummary/kroki.scoped_css.html#kroki.scoped_css.scope_svg">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">scope_svg</span><span class="p">(</span><span class="n">svg</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">scope_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -568,19 +692,30 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">new_tag</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'&lt;svg id="</span><span class="si">{</span><span class="n">scope_id</span><span class="si">}</span><span class="s1">"</span><span class="si">{</span><span class="n">tag</span><span class="p">[</span><span class="mi">4</span><span class="p">:]</span><span class="si">}</span><span class="s1">'</span>
 
+    <span class="c1"># Names this SVG defines globally, each made unique to this scope.</span>
+    <span class="n">defined</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">_STYLE_RE</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">svg</span><span class="p">[</span><span class="n">root</span><span class="o">.</span><span class="n">end</span><span class="p">()</span> <span class="p">:]):</span>
+        <span class="n">cdata</span> <span class="o">=</span> <span class="n">_CDATA_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">defined</span> <span class="o">+=</span> <span class="n">_global_names</span><span class="p">(</span><span class="n">cdata</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="k">if</span> <span class="n">cdata</span> <span class="k">else</span> <span class="n">html</span><span class="o">.</span><span class="n">unescape</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span>
+    <span class="n">rename</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">scope_id</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">defined</span><span class="p">)}</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">rewrite</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
         <span class="n">open_</span><span class="p">,</span> <span class="n">css</span><span class="p">,</span> <span class="n">close</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>
         <span class="n">cdata</span> <span class="o">=</span> <span class="n">_CDATA_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">css</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">cdata</span><span class="p">:</span>
             <span class="n">pre</span><span class="p">,</span> <span class="n">body</span><span class="p">,</span> <span class="n">post</span> <span class="o">=</span> <span class="n">cdata</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>
-            <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">open_</span><span class="si">}{</span><span class="n">pre</span><span class="si">}{</span><span class="n">scope_css</span><span class="p">(</span><span class="n">body</span><span class="p">,</span><span class="w"> </span><span class="n">scope_id</span><span class="p">,</span><span class="w"> </span><span class="n">root_ids</span><span class="o">=</span><span class="n">old_ids</span><span class="p">)</span><span class="si">}{</span><span class="n">post</span><span class="si">}{</span><span class="n">close</span><span class="si">}</span><span class="s2">"</span>
+            <span class="n">body</span> <span class="o">=</span> <span class="n">_rename_globals</span><span class="p">(</span><span class="n">scope_css</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">scope_id</span><span class="p">,</span> <span class="n">root_ids</span><span class="o">=</span><span class="n">old_ids</span><span class="p">),</span> <span class="n">rename</span><span class="p">)</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">open_</span><span class="si">}{</span><span class="n">pre</span><span class="si">}{</span><span class="n">body</span><span class="si">}{</span><span class="n">post</span><span class="si">}{</span><span class="n">close</span><span class="si">}</span><span class="s2">"</span>
         <span class="c1"># Outside CDATA the text is XML: "&amp;gt;" and "&amp;quot;" are what a browser</span>
         <span class="c1"># reads as "&gt;" and '"', so the CSS is scoped decoded and escaped back, or a</span>
         <span class="c1"># quote the tokenizer cannot see would let a rule slip out unscoped.</span>
         <span class="n">scoped</span> <span class="o">=</span> <span class="n">scope_css</span><span class="p">(</span><span class="n">html</span><span class="o">.</span><span class="n">unescape</span><span class="p">(</span><span class="n">css</span><span class="p">),</span> <span class="n">scope_id</span><span class="p">,</span> <span class="n">root_ids</span><span class="o">=</span><span class="n">old_ids</span><span class="p">)</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">open_</span><span class="si">}{</span><span class="n">xml_escape</span><span class="p">(</span><span class="n">scoped</span><span class="p">)</span><span class="si">}{</span><span class="n">close</span><span class="si">}</span><span class="s2">"</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">open_</span><span class="si">}{</span><span class="n">xml_escape</span><span class="p">(</span><span class="n">_rename_globals</span><span class="p">(</span><span class="n">scoped</span><span class="p">,</span><span class="w"> </span><span class="n">rename</span><span class="p">))</span><span class="si">}{</span><span class="n">close</span><span class="si">}</span><span class="s2">"</span>
 
+    <span class="c1"># Tags are renamed outside the &lt;style&gt; elements (those are done in rewrite).</span>
     <span class="n">rest</span> <span class="o">=</span> <span class="n">_STYLE_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">rewrite</span><span class="p">,</span> <span class="n">svg</span><span class="p">[</span><span class="n">root</span><span class="o">.</span><span class="n">end</span><span class="p">()</span> <span class="p">:])</span>
+    <span class="k">if</span> <span class="n">rename</span><span class="p">:</span>
+        <span class="n">rest</span> <span class="o">=</span> <span class="n">_rename_tags_outside_styles</span><span class="p">(</span><span class="n">rest</span><span class="p">,</span> <span class="n">rename</span><span class="p">)</span>
     <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">svg</span><span class="p">[:</span><span class="w"> </span><span class="n">root</span><span class="o">.</span><span class="n">start</span><span class="p">()]</span><span class="si">}{</span><span class="n">new_tag</span><span class="si">}{</span><span class="n">rest</span><span class="si">}</span><span class="s2">"</span></div>
 
 </pre></div>
@@ -611,7 +746,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=932d0dab"></script>
+</div><script src="../../_static/documentation_options.js?v=b39c9740"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
